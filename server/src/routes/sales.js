@@ -98,7 +98,7 @@ router.post("/", async (req, res) => {
         },
         payments: { create: data.payments }
       },
-      include: { items: true, payments: true, customer: true }
+      include: { items: { include: { product: true, variant: true } }, payments: true, customer: true }
     });
 
     if (data.customerId) {

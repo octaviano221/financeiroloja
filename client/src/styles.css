@@ -312,10 +312,72 @@ nav button.active {
   box-shadow: 0 8px 24px rgba(91, 46, 61, 0.05);
 }
 
+.search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 540px;
+}
+
+.search-wrap .search {
+  max-width: none;
+}
+
+.search.inline {
+  max-width: none;
+  width: 100%;
+}
+
 .search input {
   border: 0;
   box-shadow: none;
   padding-left: 0;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  background: rgba(255,255,255,0.96);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.search-results p {
+  margin: 8px;
+  color: var(--muted);
+}
+
+.search-results button {
+  display: grid;
+  gap: 2px;
+  border: 0;
+  border-radius: 9px;
+  padding: 10px;
+  background: transparent;
+  text-align: left;
+}
+
+.search-results button:hover {
+  background: var(--rose-soft);
+}
+
+.search-results small {
+  color: var(--rose);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.search-results span {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .user-pill {
@@ -621,9 +683,22 @@ tbody tr:hover {
 
 .pdv-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 430px;
   gap: 18px;
   align-items: start;
+}
+
+.pdv-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.pdv-tools span {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .product-grid {
@@ -671,6 +746,28 @@ tbody tr:hover {
   color: var(--muted);
 }
 
+.variant-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.variant-pills button {
+  border: 1px solid rgba(207, 63, 99, 0.16);
+  border-radius: 999px;
+  padding: 6px 8px;
+  background: var(--rose-soft);
+  color: var(--rose);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.variant-pills button:hover {
+  background: var(--rose);
+  color: white;
+}
+
 .checkout {
   position: sticky;
   top: 90px;
@@ -698,9 +795,13 @@ tbody tr:hover {
 
 .cart-line {
   display: grid;
-  grid-template-columns: 1fr 64px 86px;
+  grid-template-columns: minmax(120px, 1fr) 104px 74px 82px 34px;
   gap: 8px;
   align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffafd;
 }
 
 .cart-line span {
@@ -714,6 +815,100 @@ tbody tr:hover {
 
 .cart-line input {
   padding: 8px;
+}
+
+.qty-stepper {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  gap: 4px;
+  align-items: center;
+}
+
+.qty-stepper button,
+.icon-action {
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 34px;
+  background: white;
+  color: var(--rose);
+}
+
+.qty-stepper input,
+.discount-input {
+  text-align: center;
+}
+
+.icon-action:hover {
+  background: #fff0f2;
+  color: var(--danger);
+}
+
+.empty-cart {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.summary-lines {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fffafd;
+  border: 1px solid var(--line);
+}
+
+.summary-lines span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.summary-lines strong {
+  color: var(--ink);
+}
+
+.receipt-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold-soft), var(--rose-soft));
+  border: 1px solid rgba(185, 131, 53, 0.18);
+}
+
+.receipt-card div {
+  display: grid;
+  gap: 2px;
+}
+
+.receipt-card small {
+  color: var(--muted);
+}
+
+.receipt-card span {
+  color: var(--rose);
+  font-weight: 800;
+}
+
+.receipt-card button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: white;
+  color: var(--ink);
+  font-weight: 800;
 }
 
 .total {
@@ -787,6 +982,10 @@ tbody tr:hover {
     max-width: none;
   }
 
+  .search-wrap {
+    max-width: none;
+  }
+
   .user-pill {
     display: none;
   }
@@ -797,6 +996,16 @@ tbody tr:hover {
 
   .metric-grid,
   .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pdv-tools,
+  .receipt-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cart-line {
     grid-template-columns: 1fr;
   }
 

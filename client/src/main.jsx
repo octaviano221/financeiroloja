@@ -13,11 +13,15 @@ import {
   Home,
   LogOut,
   Menu,
+  Minus,
   Package,
+  Plus,
+  Printer,
   Receipt,
   Search,
   Settings,
   ShoppingBag,
+  Trash2,
   Truck,
   Users,
   UserCog,
@@ -117,10 +121,7 @@ function Shell({ user, onLogout }) {
       <main className="content">
         <header className="topbar">
           <button className="ghost mobile-only" onClick={() => setOpen(true)}><Menu /></button>
-          <div className="search">
-            <Search size={18} />
-            <input placeholder="Buscar produtos, clientes, pedidos..." />
-          </div>
+          <GlobalSearch onNavigate={setPage} />
           <Bell size={20} />
           <div className="user-pill">
             <span>{user?.name || "Loja"}</span>
@@ -130,6 +131,79 @@ function Shell({ user, onLogout }) {
         </header>
         <Page page={page} />
       </main>
+    </div>
+  );
+}
+
+function GlobalSearch({ onNavigate }) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const [products, customers, sales] = await Promise.all([
+          api(`/api/products?q=${encodeURIComponent(term)}`),
+          api(`/api/customers?q=${encodeURIComponent(term)}`),
+          api("/api/sales")
+        ]);
+
+        const normalized = term.toLowerCase();
+        const saleMatches = (sales || []).filter((sale) => {
+          const text = [sale.code, sale.customer?.name, sale.total].filter(Boolean).join(" ").toLowerCase();
+          return text.includes(normalized);
+        });
+
+        setResults([
+          ...(products || []).slice(0, 4).map((item) => ({ type: "Produto", title: item.name, detail: `${item.sku} • ${money(item.salePrice)}`, page: "products" })),
+          ...(customers || []).slice(0, 4).map((item) => ({ type: "Cliente", title: item.name, detail: item.phone || "Sem telefone", page: "customers" })),
+          ...saleMatches.slice(0, 4).map((item) => ({ type: "Venda", title: item.code, detail: `${item.customer?.name || "Cliente não cadastrado"} • ${money(item.total)}`, page: "reports" }))
+        ]);
+        setOpen(true);
+      } catch {
+        setResults([]);
+      }
+    }, 220);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  function choose(result) {
+    onNavigate(result.page);
+    setQuery("");
+    setOpen(false);
+  }
+
+  return (
+    <div className="search-wrap">
+      <div className="search">
+        <Search size={18} />
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onFocus={() => query.trim().length >= 2 && setOpen(true)}
+          placeholder="Buscar produtos, clientes, vendas..."
+        />
+      </div>
+      {open && query.trim().length >= 2 && (
+        <div className="search-results">
+          {results.length === 0 && <p>Nenhum resultado encontrado.</p>}
+          {results.map((result, index) => (
+            <button key={`${result.type}-${result.title}-${index}`} onClick={() => choose(result)}>
+              <small>{result.type}</small>
+              <strong>{result.title}</strong>
+              <span>{result.detail}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -216,29 +290,69 @@ function PDV() {
   const [cart, setCart] = useState([]);
   const [customerId, setCustomerId] = useState("");
   const [payment, setPayment] = useState("PIX");
+  const [cashReceived, setCashReceived] = useState("");
+  const [productSearch, setProductSearch] = useState("");
   const [message, setMessage] = useState("");
+  const [lastSale, setLastSale] = useState(null);
 
   useEffect(() => {
     api("/api/products").then(setProducts);
     api("/api/customers").then(setCustomers);
   }, []);
 
-  const total = cart.reduce((sum, item) => sum + item.quantity * Number(item.unitPrice), 0);
+  const selectedCustomer = customers.find((customer) => String(customer.id) === String(customerId));
+  const subtotal = cart.reduce((sum, item) => sum + item.quantity * Number(item.unitPrice), 0);
+  const discountTotal = cart.reduce((sum, item) => sum + Number(item.discount || 0), 0);
+  const total = Math.max(subtotal - discountTotal, 0);
+  const change = payment === "DINHEIRO" ? Math.max(Number(cashReceived || 0) - total, 0) : 0;
+  const filteredProducts = products.filter((product) => {
+    const term = productSearch.trim().toLowerCase();
+    if (!term) return true;
+    return [product.name, product.sku, product.category?.name].filter(Boolean).join(" ").toLowerCase().includes(term);
+  });
 
-  function add(product) {
-    const variant = product.variants?.find((item) => item.stock > 0);
+  function add(product, variantId) {
+    const variant = variantId
+      ? product.variants?.find((item) => String(item.id) === String(variantId))
+      : product.variants?.find((item) => item.stock > 0);
     if (!variant) {
       setMessage("Produto sem variação com estoque disponível.");
       return;
     }
     const unitPrice = Number(variant.price || product.promoPrice || product.salePrice);
-    setCart((current) => [...current, { product, variant, productId: product.id, variantId: variant.id, quantity: 1, unitPrice, discount: 0 }]);
+    setLastSale(null);
+    setMessage("");
+    setCart((current) => {
+      const existing = current.find((item) => item.variantId === variant.id);
+      if (existing) {
+        return current.map((item) => item.variantId === variant.id ? { ...item, quantity: Math.min(item.quantity + 1, Number(variant.stock || 1)) } : item);
+      }
+      return [...current, { product, variant, productId: product.id, variantId: variant.id, quantity: 1, unitPrice, discount: 0 }];
+    });
+  }
+
+  function updateCart(index, patch) {
+    setCart((rows) => rows.map((row, i) => {
+      if (i !== index) return row;
+      const nextQuantity = patch.quantity === undefined ? row.quantity : Math.max(1, Math.min(Number(patch.quantity || 1), Number(row.variant?.stock || 1)));
+      const maxDiscount = nextQuantity * Number(row.unitPrice || 0);
+      const nextDiscount = patch.discount === undefined ? row.discount : Math.max(0, Math.min(Number(patch.discount || 0), maxDiscount));
+      return { ...row, ...patch, quantity: nextQuantity, discount: nextDiscount };
+    }));
+  }
+
+  function remove(index) {
+    setCart((rows) => rows.filter((_, i) => i !== index));
   }
 
   async function finish() {
     setMessage("");
+    if (payment === "DINHEIRO" && Number(cashReceived || 0) < total) {
+      setMessage("Valor recebido menor que o total da venda.");
+      return;
+    }
     try {
-      await api("/api/sales", {
+      const sale = await api("/api/sales", {
         method: "POST",
         body: JSON.stringify({
           customerId: customerId ? Number(customerId) : null,
@@ -248,7 +362,10 @@ function PDV() {
         })
       });
       setCart([]);
+      setCashReceived("");
+      setLastSale({ ...sale, customer: sale.customer || selectedCustomer, change, cashReceived: payment === "DINHEIRO" ? Number(cashReceived || 0) : null });
       setMessage("Venda finalizada, estoque baixado e pontos gerados.");
+      setProducts(await api("/api/products"));
     } catch (err) {
       setMessage(err.message);
     }
@@ -258,14 +375,28 @@ function PDV() {
     <section className="page pdv-grid">
       <div>
         <div className="page-title"><h2>PDV / Frente de Caixa</h2><p>Venda rápida com cliente, desconto, pagamento e baixa automática.</p></div>
+        <div className="pdv-tools">
+          <div className="search inline">
+            <Search size={18} />
+            <input value={productSearch} onChange={(event) => setProductSearch(event.target.value)} placeholder="Buscar no catálogo do PDV..." />
+          </div>
+          <span>{filteredProducts.length} produtos disponíveis</span>
+        </div>
         <div className="product-grid">
-          {products.map((product) => (
-            <button className="product-card" key={product.id} onClick={() => add(product)}>
+          {filteredProducts.map((product) => (
+            <article className="product-card" key={product.id}>
               <img src={product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80"} alt="" />
               <strong>{product.name}</strong>
               <span>{money(product.promoPrice || product.salePrice)}</span>
-              <small>{product.variants?.length || 0} variações</small>
-            </button>
+              <small>{product.category?.name || "Produto"} • {product.variants?.reduce((sum, item) => sum + Number(item.stock || 0), 0)} un.</small>
+              <div className="variant-pills">
+                {(product.variants || []).filter((item) => item.stock > 0).slice(0, 4).map((variant) => (
+                  <button key={variant.id} onClick={() => add(product, variant.id)}>
+                    {variant.size} {variant.color} · {variant.stock}
+                  </button>
+                ))}
+              </div>
+            </article>
           ))}
         </div>
       </div>
@@ -279,10 +410,17 @@ function PDV() {
           {cart.map((item, index) => (
             <div className="cart-line" key={`${item.productId}-${index}`}>
               <span>{item.product.name}<small>{item.variant?.color} {item.variant?.size}</small></span>
-              <input type="number" min="1" value={item.quantity} onChange={(event) => setCart((rows) => rows.map((row, i) => i === index ? { ...row, quantity: Number(event.target.value) } : row))} />
-              <strong>{money(item.quantity * item.unitPrice)}</strong>
+              <div className="qty-stepper">
+                <button type="button" onClick={() => updateCart(index, { quantity: item.quantity - 1 })}><Minus size={14} /></button>
+                <input type="number" min="1" value={item.quantity} onChange={(event) => updateCart(index, { quantity: Number(event.target.value) })} />
+                <button type="button" onClick={() => updateCart(index, { quantity: item.quantity + 1 })}><Plus size={14} /></button>
+              </div>
+              <input className="discount-input" type="number" min="0" placeholder="Desc." value={item.discount} onChange={(event) => updateCart(index, { discount: Number(event.target.value) })} />
+              <strong>{money(Math.max(item.quantity * item.unitPrice - Number(item.discount || 0), 0))}</strong>
+              <button className="icon-action" type="button" title="Remover item" onClick={() => remove(index)}><Trash2 size={16} /></button>
             </div>
           ))}
+          {!cart.length && <p className="empty-cart">Adicione produtos pelo catálogo para começar a venda.</p>}
         </div>
         <label>Forma de pagamento
           <select value={payment} onChange={(event) => setPayment(event.target.value)}>
@@ -294,11 +432,80 @@ function PDV() {
             <option value="VALE_TROCA">Vale-troca</option>
           </select>
         </label>
+        {payment === "DINHEIRO" && (
+          <label>Valor recebido
+            <input type="number" min="0" value={cashReceived} onChange={(event) => setCashReceived(event.target.value)} placeholder="0,00" />
+          </label>
+        )}
+        <div className="summary-lines">
+          <span>Subtotal <strong>{money(subtotal)}</strong></span>
+          <span>Descontos <strong>{money(discountTotal)}</strong></span>
+          {payment === "DINHEIRO" && <span>Troco <strong>{money(change)}</strong></span>}
+        </div>
         <div className="total"><span>Total</span><strong>{money(total)}</strong></div>
         <button className="primary" disabled={!cart.length} onClick={finish}>Finalizar venda</button>
+        {lastSale && <ReceiptCard sale={lastSale} />}
         {message && <p className="notice">{message}</p>}
       </aside>
     </section>
+  );
+}
+
+function ReceiptCard({ sale }) {
+  function printReceipt() {
+    const rows = (sale.items || []).map((item) => `
+      <tr>
+        <td>${item.product?.name || "Produto"}</td>
+        <td>${item.quantity}</td>
+        <td>${money(item.unitPrice)}</td>
+        <td>${money(item.total)}</td>
+      </tr>
+    `).join("");
+    const payments = (sale.payments || []).map((payment) => `${formatText(payment.method)} ${money(payment.amount)}`).join("<br>");
+    const popup = window.open("", "receipt", "width=380,height=620");
+    popup.document.write(`
+      <html>
+        <head>
+          <title>Comprovante ${sale.code}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 18px; color: #222; }
+            h2, p { margin: 0 0 8px; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+            td, th { border-bottom: 1px solid #ddd; padding: 6px 0; font-size: 12px; text-align: left; }
+            .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 12px; }
+            .muted { color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <h2>Sud Daiana Modas</h2>
+          <p class="muted">Comprovante de venda</p>
+          <p><strong>${sale.code}</strong></p>
+          <p class="muted">${new Date(sale.createdAt || Date.now()).toLocaleString("pt-BR")}</p>
+          <p>Cliente: ${sale.customer?.name || "Cliente não cadastrado"}</p>
+          <table>
+            <thead><tr><th>Item</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <p>Pagamento:<br>${payments}</p>
+          ${sale.cashReceived ? `<p>Recebido: ${money(sale.cashReceived)}<br>Troco: ${money(sale.change)}</p>` : ""}
+          <p class="total">Total: ${money(sale.total)}</p>
+          <p class="muted">Obrigada pela preferência!</p>
+          <script>window.print(); window.close();</script>
+        </body>
+      </html>
+    `);
+    popup.document.close();
+  }
+
+  return (
+    <div className="receipt-card">
+      <div>
+        <small>Última venda</small>
+        <strong>{sale.code}</strong>
+        <span>{money(sale.total)}</span>
+      </div>
+      <button type="button" onClick={printReceipt}><Printer size={16} /> Imprimir</button>
+    </div>
   );
 }
 
