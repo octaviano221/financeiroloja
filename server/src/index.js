@@ -12,6 +12,7 @@ import customerRoutes from "./routes/customers.js";
 import saleRoutes from "./routes/sales.js";
 import moduleRoutes from "./routes/modules.js";
 import onlineRoutes from "./routes/online.js";
+import userRoutes from "./routes/users.js";
 import { auth } from "./middleware/auth.js";
 
 const app = express();
@@ -40,6 +41,7 @@ app.use("/api/dashboard", auth(), dashboardRoutes);
 app.use("/api/products", auth(), productRoutes);
 app.use("/api/customers", auth(), customerRoutes);
 app.use("/api/sales", auth(), saleRoutes);
+app.use("/api/users", auth(), userRoutes);
 app.use("/api", auth(), moduleRoutes);
 
 app.use(express.static(clientDist));

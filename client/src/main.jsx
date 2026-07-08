@@ -20,6 +20,7 @@ import {
   ShoppingBag,
   Truck,
   Users,
+  UserCog,
   WalletCards,
   X
 } from "lucide-react";
@@ -39,6 +40,7 @@ const nav = [
   { id: "cash", label: "Caixa", icon: WalletCards },
   { id: "fiscal", label: "Nota Fiscal", icon: Receipt },
   { id: "reports", label: "Relatorios", icon: BarChart3 },
+  { id: "users", label: "Usuarios", icon: UserCog },
   { id: "online", label: "Pedido Online", icon: CalendarHeart },
   { id: "settings", label: "Configuracoes", icon: Settings }
 ];
@@ -146,6 +148,7 @@ function Page({ page }) {
     cash: <SimpleModule title="Caixa" endpoint="/api/cash" description="Abertura, sangria, entradas, saidas, fechamento e diferenca de caixa." />,
     fiscal: <SimpleModule title="Nota Fiscal" endpoint="/api/invoices" description="Estrutura pronta para NFC-e/NF-e, XML, DANFE e provedor fiscal homologado." />,
     reports: <Reports />,
+    users: <UsersPage />,
     online: <OnlineStore />,
     settings: <SettingsPage />
   };
@@ -422,6 +425,108 @@ function SettingsPage() {
       </form>
     </section>
   );
+}
+
+function UsersPage() {
+  const empty = { name: "", email: "", password: "", role: "VENDEDOR", active: true };
+  const [rows, setRows] = useState([]);
+  const [form, setForm] = useState(empty);
+  const [editingId, setEditingId] = useState(null);
+  const [message, setMessage] = useState("");
+
+  async function load() {
+    setRows(await api("/api/users"));
+  }
+
+  useEffect(() => { load().catch((err) => setMessage(err.message)); }, []);
+
+  function edit(user) {
+    setEditingId(user.id);
+    setForm({ name: user.name, email: user.email, password: "", role: user.role, active: user.active });
+    setMessage("Editando usuario. Deixe a senha vazia para manter a atual.");
+  }
+
+  async function save(event) {
+    event.preventDefault();
+    setMessage("");
+    try {
+      const path = editingId ? `/api/users/${editingId}` : "/api/users";
+      const method = editingId ? "PUT" : "POST";
+      await api(path, { method, body: JSON.stringify(form) });
+      setForm(empty);
+      setEditingId(null);
+      await load();
+      setMessage(editingId ? "Usuario atualizado." : "Usuario criado.");
+    } catch (err) {
+      setMessage(err.message);
+    }
+  }
+
+  async function toggle(user) {
+    setMessage("");
+    try {
+      await api(`/api/users/${user.id}/toggle`, { method: "PATCH" });
+      await load();
+    } catch (err) {
+      setMessage(err.message);
+    }
+  }
+
+  return (
+    <section className="page two-col">
+      <div>
+        <div className="page-title"><h2>Usuarios e Permissoes</h2><p>Controle quem acessa o sistema e o papel de cada pessoa na loja.</p></div>
+        <div className="panel">
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th>Acoes</th></tr></thead>
+              <tbody>
+                {rows.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{roleLabel(user.role)}</td>
+                    <td>{user.active ? "Ativo" : "Inativo"}</td>
+                    <td className="actions-cell">
+                      <button onClick={() => edit(user)}>Editar</button>
+                      <button onClick={() => toggle(user)}>{user.active ? "Desativar" : "Ativar"}</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <form className="panel form-stack" onSubmit={save}>
+        <h3>{editingId ? "Editar usuario" : "Novo usuario"}</h3>
+        <input placeholder="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <input type="password" placeholder={editingId ? "Nova senha opcional" : "Senha"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+          <option value="ADMIN">Administrador</option>
+          <option value="CAIXA">Caixa</option>
+          <option value="VENDEDOR">Vendedor</option>
+          <option value="ESTOQUISTA">Estoquista</option>
+          <option value="ENTREGADOR">Entregador</option>
+        </select>
+        <label className="check-row"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Usuario ativo</label>
+        <button className="primary">{editingId ? "Salvar alteracoes" : "Criar usuario"}</button>
+        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edicao</button>}
+        {message && <p className="notice">{message}</p>}
+      </form>
+    </section>
+  );
+}
+
+function roleLabel(role) {
+  return {
+    ADMIN: "Administrador",
+    CAIXA: "Caixa",
+    VENDEDOR: "Vendedor",
+    ESTOQUISTA: "Estoquista",
+    ENTREGADOR: "Entregador"
+  }[role] || role;
 }
 
 function DataTable({ rows, columns }) {

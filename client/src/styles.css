@@ -401,6 +401,32 @@ th {
   text-transform: uppercase;
 }
 
+.actions-cell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions-cell button,
+.form-stack button[type="button"] {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 8px 10px;
+  background: white;
+  color: var(--ink);
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+}
+
+.check-row input {
+  width: auto;
+}
+
 .pdv-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
