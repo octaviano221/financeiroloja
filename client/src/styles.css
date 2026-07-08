@@ -1296,9 +1296,45 @@ tbody tr:hover {
 
 .pdv-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 390px);
-  gap: 34px;
+  grid-template-columns: minmax(0, 1fr) minmax(390px, 430px);
+  gap: 28px;
   align-items: start;
+}
+
+.pdv-hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.pdv-hero .page-title {
+  margin-bottom: 0;
+}
+
+.pdv-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 420px;
+}
+
+.pdv-kpis span {
+  display: grid;
+  gap: 3px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.88);
+  color: var(--muted);
+  font-size: 12px;
+  box-shadow: 0 10px 28px rgba(91,46,61,0.06);
+}
+
+.pdv-kpis strong {
+  color: var(--ink);
+  font-size: 17px;
 }
 
 .pdv-tools {
@@ -1314,7 +1350,7 @@ tbody tr:hover {
   align-items: end;
   gap: 14px;
   margin-bottom: 16px;
-  padding: 16px;
+  padding: 18px;
   border: 1px solid rgba(207,63,99,0.16);
   border-radius: 16px;
   background:
@@ -1348,8 +1384,8 @@ tbody tr:hover {
 }
 
 .barcode-panel input {
-  min-height: 48px;
-  font-size: 16px;
+  min-height: 54px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.01em;
 }
@@ -1523,10 +1559,12 @@ tbody tr:hover {
   top: 90px;
   display: grid;
   gap: 14px;
-  padding: 22px;
+  padding: 24px;
   animation: cardIn 340ms ease both;
   min-width: 0;
   border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,248,251,0.94));
   box-shadow: var(--shadow-strong);
 }
 
@@ -1554,6 +1592,9 @@ tbody tr:hover {
 .cart-lines {
   display: grid;
   gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .cart-line {
@@ -1649,6 +1690,38 @@ tbody tr:hover {
   border-radius: 12px;
   background: rgba(255, 250, 252, 0.86);
   border: 1px solid var(--line);
+}
+
+.payment-panel {
+  display: grid;
+  gap: 9px;
+}
+
+.payment-panel > span {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.payment-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.payment-options button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.92);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.payment-options button.active {
+  border-color: rgba(207,63,99,0.3);
+  color: #fff;
+  background: linear-gradient(135deg, var(--rose), #e87698);
+  box-shadow: 0 12px 26px rgba(207,63,99,0.2);
 }
 
 .credit-box,
@@ -1790,6 +1863,15 @@ tbody tr:hover {
   .checkout {
     position: static;
   }
+
+  .pdv-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pdv-kpis {
+    min-width: 0;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1849,6 +1931,11 @@ tbody tr:hover {
 
   .dashboard-actions {
     flex-direction: column;
+  }
+
+  .pdv-kpis,
+  .payment-options {
+    grid-template-columns: 1fr;
   }
 
   .sales-chart {

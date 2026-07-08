@@ -473,6 +473,16 @@ function PDV() {
   const discountTotal = cart.reduce((sum, item) => sum + Number(item.discount || 0), 0);
   const total = Math.max(subtotal - discountTotal, 0);
   const change = payment === "DINHEIRO" ? Math.max(Number(cashReceived || 0) - total, 0) : 0;
+  const cartItemsCount = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const totalStock = products.reduce((sum, product) => sum + (product.variants || []).reduce((acc, variant) => acc + Number(variant.stock || 0), 0), 0);
+  const paymentOptions = [
+    ["PIX", "Pix"],
+    ["DINHEIRO", "Dinheiro"],
+    ["DEBITO", "Débito"],
+    ["CREDITO", "Crédito"],
+    ["CREDIARIO", "Fiado"],
+    ["VALE_TROCA", "Vale"]
+  ];
   const filteredProducts = products.filter((product) => {
     const term = productSearch.trim().toLowerCase();
     if (!term) return true;
@@ -585,7 +595,14 @@ function PDV() {
   return (
     <section className="page pdv-grid">
       <div>
-        <div className="page-title"><h2>PDV / Frente de Caixa</h2><p>Venda rápida com cliente, desconto, pagamento e baixa automática.</p></div>
+        <div className="pdv-hero">
+          <div className="page-title"><h2>PDV / Frente de Caixa</h2><p>Venda rápida com leitor, cliente, pagamento e cupom.</p></div>
+          <div className="pdv-kpis">
+            <span><strong>{cartItemsCount}</strong> itens</span>
+            <span><strong>{money(total)}</strong> total</span>
+            <span><strong>{totalStock}</strong> un. estoque</span>
+          </div>
+        </div>
         <form className="barcode-panel" onSubmit={scanBarcode}>
           <div>
             <Barcode size={24} />
@@ -657,16 +674,16 @@ function PDV() {
           ))}
           {!cart.length && <p className="empty-cart"><Plus size={18} /> Adicione produtos pelo catálogo para começar a venda.</p>}
         </div>
-        <label>Forma de pagamento
-          <select value={payment} onChange={(event) => setPayment(event.target.value)}>
-            <option value="DINHEIRO">Dinheiro</option>
-            <option value="PIX">Pix</option>
-            <option value="DEBITO">Cartão de débito</option>
-            <option value="CREDITO">Cartão de crédito</option>
-            <option value="CREDIARIO">Crediário</option>
-            <option value="VALE_TROCA">Vale-troca</option>
-          </select>
-        </label>
+        <div className="payment-panel">
+          <span>Forma de pagamento</span>
+          <div className="payment-options">
+            {paymentOptions.map(([value, label]) => (
+              <button className={payment === value ? "active" : ""} key={value} type="button" onClick={() => setPayment(value)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         {payment === "DINHEIRO" && (
           <label>Valor recebido
             <input type="number" min="0" value={cashReceived} onChange={(event) => setCashReceived(event.target.value)} placeholder="0,00" />
