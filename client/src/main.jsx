@@ -682,6 +682,32 @@ function roleLabel(role) {
 
 function DataTable({ rows, columns }) {
   const safeRows = rows || [];
+  const labels = {
+    id: "Código",
+    code: "Venda",
+    name: "Nome",
+    phone: "Telefone",
+    cpf: "CPF",
+    email: "E-mail",
+    active: "Ativo",
+    status: "Status",
+    total: "Total",
+    salePrice: "Preço de venda",
+    openingAmount: "Valor inicial",
+    closingAmount: "Valor final",
+    operatorName: "Operador",
+    createdAt: "Criado em",
+    openedAt: "Aberto em",
+    stock: "Estoque",
+    size: "Tamanho",
+    color: "Cor",
+    method: "Forma",
+    loyaltyPoints: "Pontos",
+    "customer.name": "Cliente",
+    "category.name": "Categoria",
+    "product.name": "Produto"
+  };
+
   function value(row, key) {
     const val = key.split(".").reduce((acc, part) => acc?.[part], row);
     if (key.toLowerCase().includes("price") || key === "total") return money(val);
@@ -693,7 +719,7 @@ function DataTable({ rows, columns }) {
   return (
     <div className="table-wrap">
       <table>
-        <thead><tr>{columns.map((col) => <th key={col}>{col.replace(".", " ")}</th>)}</tr></thead>
+        <thead><tr>{columns.map((col) => <th key={col}>{labels[col] || col}</th>)}</tr></thead>
         <tbody>
           {safeRows.length === 0 && <tr><td colSpan={columns.length}>Nenhum registro encontrado.</td></tr>}
           {safeRows.map((row, index) => <tr key={row.id || index}>{columns.map((col) => <td key={col}>{value(row, col)}</td>)}</tr>)}
