@@ -210,7 +210,7 @@ function GlobalSearch({ onNavigate }) {
 
 function Page({ page }) {
   const map = {
-    dashboard: <Dashboard />,
+    dashboard: <DashboardPremium />,
     pdv: <PDV />,
     products: <Products />,
     stock: <SimpleModule title="Estoque" endpoint="/api/products" description="Movimentações, inventário, filtros por cor/tamanho e alertas de estoque baixo." columns={["name", "sku", "category.name", "salePrice", "active"]} />,
@@ -281,6 +281,126 @@ function Dashboard() {
         </section>
       </div>
     </section>
+  );
+}
+
+function DashboardPremium() {
+  const [data, setData] = useState(null);
+
+  async function loadDashboard() {
+    setData(await api("/api/dashboard"));
+  }
+
+  useEffect(() => { loadDashboard().catch(console.error); }, []);
+
+  const cards = data?.cards || {};
+  const chartMax = Math.max(...(data?.chart || []).map((point) => Number(point.total || 0)), 1);
+  const mainCards = [
+    ["Vendas do Dia", money(cards.todaySales), "0 vendas realizadas", BadgeDollarSign, "rose", "line"],
+    ["Vendas do Mês", money(cards.monthSales), "0 vendas realizadas", BarChart3, "rose", "bars"],
+    ["Quantidade de Vendas", cards.salesCount || 0, "0% em relação ao mês anterior", ShoppingBag, "purple", "line"],
+    ["Lucro Estimado", money(cards.estimatedProfit), "0% em relação ao mês anterior", WalletCards, "green", "line"]
+  ];
+  const miniCards = [
+    ["Crediário em Aberto", money(cards.openCredit), "clientes", CreditCard, "rose"],
+    ["Delivery Pendente", cards.pendingDelivery || 0, "entregas", Truck, "orange"],
+    ["Estoque Baixo", cards.lowStock || 0, "produtos", Boxes, "amber"],
+    ["Clientes Fidelidade", cards.loyaltyCustomers || 0, "cliente", Heart, "purple"],
+    ["Promoções Ativas", cards.activePromos || 0, "promoções", Gift, "rose"]
+  ];
+
+  return (
+    <section className="page dashboard-page">
+      <div className="dashboard-hero">
+        <div>
+          <h2>Olá, Admin!</h2>
+          <p>Veja o desempenho da sua loja hoje.</p>
+        </div>
+        <div className="dashboard-actions">
+          <button type="button">Hoje, {new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}</button>
+          <button className="primary" type="button" onClick={loadDashboard}>Atualizar dados</button>
+        </div>
+      </div>
+
+      <div className="metric-grid dashboard-main-cards">
+        {mainCards.map(([label, value, helper, Icon, tone, spark]) => (
+          <article className={`metric dashboard-card ${tone}`} key={label}>
+            <div>
+              <span>{label}</span>
+              <strong>{value}</strong>
+              <small>{helper}</small>
+            </div>
+            <Icon />
+            <Sparkline type={spark} />
+          </article>
+        ))}
+      </div>
+
+      <div className="dashboard-mini-grid">
+        {miniCards.map(([label, value, helper, Icon, tone]) => (
+          <article className={`mini-metric ${tone}`} key={label}>
+            <div>
+              <span>{label}</span>
+              <strong>{value}</strong>
+              <small>{helper}</small>
+            </div>
+            <Icon />
+          </article>
+        ))}
+      </div>
+
+      <div className="dashboard-grid premium">
+        <section className="panel wide">
+          <div className="panel-head"><h3>Gráfico de Vendas</h3><button>Este mês</button></div>
+          <div className="sales-chart">
+            <div className="chart-scale"><span>R$ 1.000</span><span>R$ 750</span><span>R$ 500</span><span>R$ 250</span><span>R$ 0</span></div>
+            <div className="chart-area">
+              {(data?.chart || []).map((point) => <i key={point.label} style={{ height: `${Math.max((Number(point.total || 0) / chartMax) * 160, 18)}px` }} title={`${point.label}: ${money(point.total)}`} />)}
+            </div>
+          </div>
+        </section>
+
+        <section className="panel alert-panel">
+          <div className="panel-head"><h3>Alertas importantes</h3></div>
+          <ul className="alert-list">
+            <li className="success"><span>{data?.alerts?.overdueCredit || 0} parcelas vencidas<small>Situação em dia</small></span><StatusBadge value="OK" /></li>
+            <li className="warning"><span>{data?.alerts?.pendingDelivery || 0} entregas aguardando<small>Acompanhe as entregas</small></span><StatusBadge value="PENDENTE" /></li>
+            {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li className="warning" key={item.id}><span>{item.name} {item.size} com {item.stock} un.<small>Estoque baixo</small></span><StatusBadge value="BAIXO" /></li>)}
+          </ul>
+        </section>
+
+        <section className="panel wide">
+          <div className="panel-head"><h3>Vendas Recentes</h3></div>
+          {(data?.recentSales || []).length ? (
+            <DataTable rows={data?.recentSales || []} columns={["code", "customer.name", "total", "createdAt", "status"]} />
+          ) : (
+            <EmptyState title="Nenhum registro encontrado." text="As vendas realizadas aparecerão aqui." action="Ir para o PDV" />
+          )}
+        </section>
+      </div>
+    </section>
+  );
+}
+
+function Sparkline({ type }) {
+  const bars = [18, 22, 16, 26, 20, 24, 19, 28, 21, 25, 18, 23];
+  return (
+    <div className={`sparkline ${type}`}>
+      {bars.map((height, index) => <i key={index} style={{ height }} />)}
+    </div>
+  );
+}
+
+function EmptyState({ title, text, action }) {
+  return (
+    <div className="empty-state">
+      <Receipt size={22} />
+      <div>
+        <strong>{title}</strong>
+        <span>{text}</span>
+        {action && <button type="button">{action}</button>}
+      </div>
+    </div>
   );
 }
 
