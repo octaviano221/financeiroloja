@@ -363,9 +363,9 @@ function DashboardPremium() {
         <section className="panel alert-panel">
           <div className="panel-head"><h3>Alertas importantes</h3></div>
           <ul className="alert-list">
-            <li className="success"><span>{data?.alerts?.overdueCredit || 0} parcelas vencidas<small>Situação em dia</small></span><StatusBadge value="OK" /></li>
-            <li className="warning"><span>{data?.alerts?.pendingDelivery || 0} entregas aguardando<small>Acompanhe as entregas</small></span><StatusBadge value="PENDENTE" /></li>
-            {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li className="warning" key={item.id}><span>{item.name} {item.size} com {item.stock} un.<small>Estoque baixo</small></span><StatusBadge value="BAIXO" /></li>)}
+            <li className="success"><span>{data?.alerts?.overdueCredit || 0} parcelas vencidas<small>Situação em dia</small></span><em className="alert-pill ok">Ok</em></li>
+            <li className="warning"><span>{data?.alerts?.pendingDelivery || 0} entregas aguardando<small>Acompanhe as entregas</small></span><em className="alert-pill pending">Pendente</em></li>
+            {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li className="warning" key={item.id}><span>{item.name} {item.size} com {item.stock} un.<small>Estoque baixo</small></span><em className="alert-pill low">Baixo</em></li>)}
           </ul>
         </section>
 
@@ -383,7 +383,7 @@ function DashboardPremium() {
 }
 
 function Sparkline({ type }) {
-  const bars = [18, 22, 16, 26, 20, 24, 19, 28, 21, 25, 18, 23];
+  const bars = type === "line" ? [16, 24, 20, 28, 18, 25, 21, 30, 22, 26] : [9, 14, 8, 23, 12, 16, 10, 26, 18, 11, 15, 20];
   return (
     <div className={`sparkline ${type}`}>
       {bars.map((height, index) => <i key={index} style={{ height }} />)}
