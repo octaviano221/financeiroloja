@@ -510,67 +510,199 @@ function ReceiptCard({ sale }) {
 }
 
 function Products() {
+  const empty = { name: "", sku: "", salePrice: "", costPrice: "", categoryId: "", brandId: "", imageUrl: "", variants: "Rosa,P,SKU-RO-P,3" };
   const [products, setProducts] = useState([]);
   const [options, setOptions] = useState({ categories: [], brands: [] });
-  const [form, setForm] = useState({ name: "", sku: "", salePrice: "", costPrice: "", categoryId: "", variants: "Rosa,P,SKU-RO-P,3" });
+  const [form, setForm] = useState(empty);
+  const [editingId, setEditingId] = useState(null);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     api("/api/products").then(setProducts);
     api("/api/products/lookups/options").then(setOptions);
   }, []);
 
+  function edit(product) {
+    setEditingId(product.id);
+    setForm({
+      name: product.name || "",
+      sku: product.sku || "",
+      salePrice: product.salePrice || "",
+      costPrice: product.costPrice || "",
+      categoryId: product.categoryId || "",
+      brandId: product.brandId || "",
+      imageUrl: product.imageUrl || "",
+      variants: (product.variants || []).map((variant) => [variant.color, variant.size, variant.sku, variant.stock].join(",")).join("\n")
+    });
+    setMessage("Editando produto. Revise as variações antes de salvar.");
+  }
+
+  async function loadProducts() {
+    setProducts(await api("/api/products"));
+  }
+
   async function save(event) {
     event.preventDefault();
+    setMessage("");
     const variants = form.variants.split("\n").filter(Boolean).map((line) => {
       const [color, size, sku, stock] = line.split(",");
       return { color, size, sku, stock: Number(stock || 0) };
     });
-    const product = await api("/api/products", {
-      method: "POST",
-      body: JSON.stringify({ ...form, costPrice: Number(form.costPrice), salePrice: Number(form.salePrice), categoryId: Number(form.categoryId), variants })
-    });
-    setProducts((rows) => [product, ...rows]);
+    const payload = {
+      ...form,
+      costPrice: Number(form.costPrice),
+      salePrice: Number(form.salePrice),
+      categoryId: Number(form.categoryId),
+      brandId: form.brandId ? Number(form.brandId) : null,
+      variants
+    };
+    try {
+      const path = editingId ? `/api/products/${editingId}` : "/api/products";
+      const method = editingId ? "PUT" : "POST";
+      await api(path, { method, body: JSON.stringify(payload) });
+      setForm(empty);
+      setEditingId(null);
+      await loadProducts();
+      setMessage(editingId ? "Produto atualizado." : "Produto cadastrado.");
+    } catch (err) {
+      setMessage(err.message);
+    }
+  }
+
+  async function removeProduct(product) {
+    if (!confirm(`Desativar ${product.name}?`)) return;
+    await api(`/api/products/${product.id}`, { method: "DELETE" });
+    await loadProducts();
   }
 
   return (
     <section className="page two-col">
       <div>
         <div className="page-title"><h2>Produtos</h2><p>Cadastro com categoria, marca, foto, preço e variações de roupa.</p></div>
-        <DataTable rows={products} columns={["name", "sku", "category.name", "salePrice", "active"]} />
+        <div className="panel-actions">
+          <button onClick={() => exportCsv("produtos-sud-daiana.csv", products, ["name", "sku", "category.name", "salePrice", "active"])}>Exportar CSV</button>
+        </div>
+        <DataTable
+          rows={products}
+          columns={["name", "sku", "category.name", "salePrice", "active"]}
+          actions={(product) => (
+            <>
+              <button onClick={() => edit(product)}>Editar</button>
+              <button onClick={() => removeProduct(product)}>Desativar</button>
+            </>
+          )}
+        />
       </div>
       <form className="panel form-stack" onSubmit={save}>
-        <h3>Novo produto</h3>
+        <h3>{editingId ? "Editar produto" : "Novo produto"}</h3>
         <input placeholder="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input placeholder="SKU principal" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} />
+        <input placeholder="URL da foto" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
         <input placeholder="Preço de custo" value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: e.target.value })} />
         <input placeholder="Preço de venda" value={form.salePrice} onChange={(e) => setForm({ ...form, salePrice: e.target.value })} />
         <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
           <option value="">Categoria</option>
           {options.categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
+        <select value={form.brandId} onChange={(e) => setForm({ ...form, brandId: e.target.value })}>
+          <option value="">Marca opcional</option>
+          {options.brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select>
         <textarea rows="4" value={form.variants} onChange={(e) => setForm({ ...form, variants: e.target.value })} />
-        <button className="primary">Salvar produto</button>
+        <button className="primary">{editingId ? "Salvar alterações" : "Salvar produto"}</button>
+        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edição</button>}
+        {message && <p className="notice">{message}</p>}
       </form>
     </section>
   );
 }
 
 function Customers() {
+  const empty = { name: "", phone: "", cpf: "", email: "", address: "", city: "", district: "", notes: "" };
   const [rows, setRows] = useState([]);
-  const [form, setForm] = useState({ name: "", phone: "", cpf: "", email: "", address: "" });
+  const [form, setForm] = useState(empty);
+  const [editingId, setEditingId] = useState(null);
+  const [message, setMessage] = useState("");
   useEffect(() => { api("/api/customers").then(setRows); }, []);
+
+  async function loadCustomers() {
+    setRows(await api("/api/customers"));
+  }
+
+  function edit(customer) {
+    setEditingId(customer.id);
+    setForm({
+      name: customer.name || "",
+      phone: customer.phone || "",
+      cpf: customer.cpf || "",
+      email: customer.email || "",
+      address: customer.address || "",
+      city: customer.city || "",
+      district: customer.district || "",
+      notes: customer.notes || ""
+    });
+    setMessage("Editando cliente.");
+  }
+
   async function save(event) {
     event.preventDefault();
-    const customer = await api("/api/customers", { method: "POST", body: JSON.stringify(form) });
-    setRows((current) => [customer, ...current]);
+    setMessage("");
+    try {
+      const path = editingId ? `/api/customers/${editingId}` : "/api/customers";
+      const method = editingId ? "PUT" : "POST";
+      await api(path, {
+        method,
+        body: JSON.stringify({
+          ...form,
+          cpf: form.cpf || null,
+          email: form.email || null,
+          address: form.address || null,
+          city: form.city || null,
+          district: form.district || null,
+          notes: form.notes || null
+        })
+      });
+      setForm(empty);
+      setEditingId(null);
+      await loadCustomers();
+      setMessage(editingId ? "Cliente atualizado." : "Cliente cadastrado.");
+    } catch (err) {
+      setMessage(err.message);
+    }
   }
   return (
     <section className="page two-col">
-      <div><div className="page-title"><h2>Clientes</h2><p>Histórico, WhatsApp, fidelidade e saldo de crediário.</p></div><DataTable rows={rows} columns={["name", "phone", "cpf", "loyaltyPoints"]} /></div>
+      <div>
+        <div className="page-title"><h2>Clientes</h2><p>Histórico, WhatsApp, fidelidade e saldo de crediário.</p></div>
+        <div className="panel-actions">
+          <button onClick={() => exportCsv("clientes-sud-daiana.csv", rows, ["name", "phone", "cpf", "email", "loyaltyPoints"])}>Exportar CSV</button>
+        </div>
+        <DataTable
+          rows={rows}
+          columns={["name", "phone", "cpf", "loyaltyPoints"]}
+          actions={(customer) => (
+            <>
+              <button onClick={() => edit(customer)}>Editar</button>
+              <a className="table-link" href={whatsAppUrl(customer.phone, `Olá ${customer.name}, tudo bem? Aqui é da Sud Daiana Modas.`)} target="_blank" rel="noreferrer">WhatsApp</a>
+            </>
+          )}
+        />
+      </div>
       <form className="panel form-stack" onSubmit={save}>
-        <h3>Novo cliente</h3>
-        {["name", "phone", "cpf", "email", "address"].map((field) => <input key={field} placeholder={field} value={form[field]} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />)}
-        <button className="primary">Salvar cliente</button>
+        <h3>{editingId ? "Editar cliente" : "Novo cliente"}</h3>
+        {[
+          ["name", "Nome"],
+          ["phone", "Telefone/WhatsApp"],
+          ["cpf", "CPF"],
+          ["email", "E-mail"],
+          ["address", "Endereço"],
+          ["district", "Bairro"],
+          ["city", "Cidade"],
+          ["notes", "Observações"]
+        ].map(([field, label]) => <input key={field} placeholder={label} value={form[field]} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />)}
+        <button className="primary">{editingId ? "Salvar alterações" : "Salvar cliente"}</button>
+        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edição</button>}
+        {message && <p className="notice">{message}</p>}
       </form>
     </section>
   );
@@ -583,7 +715,16 @@ function SimpleModule({ title, endpoint, description, columns = ["id", "name", "
     <section className="page">
       <div className="page-title"><h2>{title}</h2><p>{description}</p></div>
       <div className="panel">
-        <DataTable rows={rows} columns={columns} />
+        <div className="panel-actions">
+          <button onClick={() => exportCsv(`${title.toLowerCase().replaceAll(" ", "-")}-sud-daiana.csv`, rows, columns)}>Exportar CSV</button>
+        </div>
+        <DataTable
+          rows={rows}
+          columns={columns}
+          actions={title === "Delivery" ? (row) => (
+            <a className="table-link" href={whatsAppUrl(row.phone, `Olá ${row.customerName}, seu pedido da Sud Daiana Modas está com status: ${formatText(row.status)}.`)} target="_blank" rel="noreferrer">WhatsApp</a>
+          ) : null}
+        />
       </div>
     </section>
   );
@@ -611,8 +752,11 @@ function CreditPage() {
       {message && <p className="notice">{message}</p>}
       <div className="panel">
         <div className="table-wrap">
+          <div className="panel-actions">
+            <button onClick={() => exportCsv("crediario-sud-daiana.csv", rows, ["customer.name", "sale.code", "total", "paid", "status"])}>Exportar CSV</button>
+          </div>
           <table>
-            <thead><tr><th>Cliente</th><th>Venda</th><th>Total</th><th>Pago</th><th>Parcelas</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Venda</th><th>Total</th><th>Pago</th><th>Parcelas</th><th>Ações</th></tr></thead>
             <tbody>
               {rows.map((account) => (
                 <tr key={account.id}>
@@ -629,9 +773,12 @@ function CreditPage() {
                       ))}
                     </div>
                   </td>
+                  <td className="actions-cell">
+                    <a className="table-link" href={whatsAppUrl(account.customer?.phone, `Olá ${account.customer?.name}, tudo bem? Passando para lembrar das parcelas em aberto na Sud Daiana Modas.`)} target="_blank" rel="noreferrer">Cobrar no WhatsApp</a>
+                  </td>
                 </tr>
               ))}
-              {!rows.length && <tr><td colSpan="5">Nenhum crediário encontrado.</td></tr>}
+              {!rows.length && <tr><td colSpan="6">Nenhum crediário encontrado.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -741,6 +888,10 @@ function Reports() {
   return (
     <section className="page">
       <div className="page-title"><h2>Relatórios</h2><p>Vendas, formas de pagamento, clientes, estoque baixo e exportações.</p></div>
+      <div className="panel-actions">
+        <button onClick={() => exportCsv("estoque-baixo-sud-daiana.csv", data?.lowStock || [], ["product.name", "color", "size", "stock"])}>Exportar estoque baixo</button>
+        <button onClick={() => exportCsv("pagamentos-sud-daiana.csv", data?.byPayment || [], ["method", "_sum.amount"])}>Exportar pagamentos</button>
+      </div>
       <div className="metric-grid">
         {(data?.byPayment || []).map((item) => <article className="metric" key={item.method}><span>{item.method}</span><strong>{money(item._sum.amount)}</strong><FileText /></article>)}
       </div>
@@ -903,7 +1054,7 @@ function roleLabel(role) {
   }[role] || role;
 }
 
-function DataTable({ rows, columns }) {
+function DataTable({ rows, columns, actions }) {
   const safeRows = rows || [];
   const labels = {
     id: "Código",
@@ -957,14 +1108,43 @@ function DataTable({ rows, columns }) {
   return (
     <div className="table-wrap">
       <table>
-        <thead><tr>{columns.map((col) => <th key={col}>{labels[col] || col}</th>)}</tr></thead>
+        <thead><tr>{columns.map((col) => <th key={col}>{labels[col] || col}</th>)}{actions && <th>Ações</th>}</tr></thead>
         <tbody>
-          {safeRows.length === 0 && <tr><td colSpan={columns.length}>Nenhum registro encontrado.</td></tr>}
-          {safeRows.map((row, index) => <tr key={row.id || index}>{columns.map((col) => <td key={col}>{value(row, col)}</td>)}</tr>)}
+          {safeRows.length === 0 && <tr><td colSpan={columns.length + (actions ? 1 : 0)}>Nenhum registro encontrado.</td></tr>}
+          {safeRows.map((row, index) => (
+            <tr key={row.id || index}>
+              {columns.map((col) => <td key={col}>{value(row, col)}</td>)}
+              {actions && <td className="actions-cell">{actions(row)}</td>}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
+}
+
+function exportCsv(filename, rows, columns) {
+  const labels = columns;
+  const values = rows.map((row) => columns.map((column) => {
+    const value = column.split(".").reduce((acc, part) => acc?.[part], row);
+    if (value === null || value === undefined) return "";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value).replaceAll('"', '""');
+  }));
+  const csv = [labels, ...values].map((line) => line.map((cell) => `"${cell}"`).join(";")).join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function whatsAppUrl(phone, message = "") {
+  const digits = String(phone || "").replace(/\D/g, "");
+  const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
+  return `https://wa.me/${withCountry}?text=${encodeURIComponent(message)}`;
 }
 
 function StatusBadge({ value }) {
