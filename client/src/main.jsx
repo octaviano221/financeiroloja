@@ -431,6 +431,23 @@ function EmptyState({ title, text, action }) {
   );
 }
 
+function InsightStrip({ items }) {
+  return (
+    <div className="insight-grid">
+      {items.map(([label, value, helper, Icon, tone = "rose"]) => (
+        <article className={`insight-card ${tone}`} key={label}>
+          <div>
+            <span>{label}</span>
+            <strong>{value}</strong>
+            {helper && <small>{helper}</small>}
+          </div>
+          <Icon size={20} />
+        </article>
+      ))}
+    </div>
+  );
+}
+
 function PDV() {
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -736,10 +753,17 @@ function Products() {
     await loadProducts();
   }
 
+  const productStats = [
+    ["Produtos ativos", products.filter((item) => item.active).length, "itens disponíveis", Package, "rose"],
+    ["Categorias", new Set(products.map((item) => item.category?.name).filter(Boolean)).size, "organização da vitrine", Boxes, "amber"],
+    ["Estoque total", products.reduce((sum, item) => sum + (item.variants || []).reduce((acc, variant) => acc + Number(variant.stock || 0), 0), 0), "unidades cadastradas", ShoppingBag, "green"]
+  ];
+
   return (
     <section className="page two-col">
       <div>
         <div className="page-title"><h2>Produtos</h2><p>Cadastro com categoria, marca, foto, preço e variações de roupa.</p></div>
+        <InsightStrip items={productStats} />
         <div className="panel-actions">
           <button onClick={() => exportCsv("produtos-sud-daiana.csv", products, ["name", "sku", "category.name", "salePrice", "active"])}>Exportar CSV</button>
         </div>
@@ -769,6 +793,7 @@ function Products() {
           <option value="">Marca opcional</option>
           {options.brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
+        <small className="form-help">Variações: uma por linha no formato cor, tamanho, SKU, estoque.</small>
         <textarea rows="4" value={form.variants} onChange={(e) => setForm({ ...form, variants: e.target.value })} />
         <button className="primary">{editingId ? "Salvar alterações" : "Salvar produto"}</button>
         {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edição</button>}
@@ -831,10 +856,16 @@ function Customers() {
       setMessage(err.message);
     }
   }
+  const customerStats = [
+    ["Clientes cadastrados", rows.length, "base da loja", Users, "rose"],
+    ["Com fidelidade", rows.filter((item) => Number(item.loyaltyPoints || 0) > 0).length, "clientes pontuando", Heart, "purple"],
+    ["WhatsApp ativo", rows.filter((item) => item.phone).length, "contatos para venda", Truck, "green"]
+  ];
   return (
     <section className="page two-col">
       <div>
         <div className="page-title"><h2>Clientes</h2><p>Histórico, WhatsApp, fidelidade e saldo de crediário.</p></div>
+        <InsightStrip items={customerStats} />
         <div className="panel-actions">
           <button onClick={() => exportCsv("clientes-sud-daiana.csv", rows, ["name", "phone", "cpf", "email", "loyaltyPoints"])}>Exportar CSV</button>
         </div>
@@ -872,10 +903,18 @@ function Customers() {
 function SimpleModule({ title, endpoint, description, columns = ["id", "name", "status", "total", "createdAt"] }) {
   const [rows, setRows] = useState([]);
   useEffect(() => { api(endpoint).then((data) => setRows(Array.isArray(data) ? data : [data])).catch(() => setRows([])); }, [endpoint]);
+  const activeRows = rows.filter((row) => row.active !== false).length;
+  const statusCount = rows.filter((row) => row.status && !["CANCELADO", "INATIVO"].includes(row.status)).length;
   return (
     <section className="page">
       <div className="page-title"><h2>{title}</h2><p>{description}</p></div>
+      <InsightStrip items={[
+        ["Registros", rows.length, "no módulo", FileText, "rose"],
+        ["Em andamento", statusCount || activeRows, "ativos ou pendentes", CalendarHeart, "amber"],
+        ["Exportação", rows.length ? "Pronta" : "Aguardando", "CSV disponível", Package, "green"]
+      ]} />
       <div className="panel">
+        <div className="panel-head compact"><h3>{title === "Estoque" ? "Produtos monitorados" : `Lista de ${title.toLowerCase()}`}</h3></div>
         <div className="panel-actions">
           <button onClick={() => exportCsv(`${title.toLowerCase().replaceAll(" ", "-")}-sud-daiana.csv`, rows, columns)}>Exportar CSV</button>
         </div>
@@ -906,12 +945,20 @@ function CreditPage() {
       setMessage(err.message);
     }
   }
+  const pendingInstallments = rows.flatMap((account) => account.installments || []).filter((item) => item.status !== "PAGA");
+  const openTotal = rows.reduce((sum, account) => sum + Number(account.total || 0) - Number(account.paid || 0), 0);
 
   return (
     <section className="page">
       <div className="page-title"><h2>Crediário</h2><p>Controle clientes devendo, parcelas pendentes e baixas de pagamento.</p></div>
+      <InsightStrip items={[
+        ["Saldo em aberto", money(openTotal), "a receber", CreditCard, "rose"],
+        ["Clientes no crediário", rows.length, "contas abertas", Users, "purple"],
+        ["Parcelas pendentes", pendingInstallments.length, "para acompanhar", CalendarHeart, "amber"]
+      ]} />
       {message && <p className="notice">{message}</p>}
       <div className="panel">
+        <div className="panel-head compact"><h3>Contas e parcelas</h3></div>
         <div className="table-wrap">
           <div className="panel-actions">
             <button onClick={() => exportCsv("crediario-sud-daiana.csv", rows, ["customer.name", "sale.code", "total", "paid", "status"])}>Exportar CSV</button>
@@ -939,7 +986,7 @@ function CreditPage() {
                   </td>
                 </tr>
               ))}
-              {!rows.length && <tr><td colSpan="6">Nenhum crediário encontrado.</td></tr>}
+              {!rows.length && <tr><td className="empty-cell" colSpan="6"><strong>Nenhum crediário em aberto.</strong><span>Quando uma venda for feita no crediário, as parcelas aparecerão aqui.</span></td></tr>}
             </tbody>
           </table>
         </div>
@@ -1003,6 +1050,11 @@ function CashPage() {
     <section className="page two-col">
       <div>
         <div className="page-title"><h2>Caixa</h2><p>Abertura, movimentos, vendas automáticas e fechamento.</p></div>
+        <InsightStrip items={[
+          ["Status do caixa", openCash ? "Aberto" : "Fechado", openCash ? "pronto para vender" : "abra antes do PDV", WalletCards, openCash ? "green" : "amber"],
+          ["Operador", openCash?.operatorName || "-", "responsável atual", Users, "rose"],
+          ["Abertura", money(openCash?.openingAmount || 0), "valor inicial", BadgeDollarSign, "purple"]
+        ]} />
         {message && <p className="notice">{message}</p>}
         <div className="panel">
           <DataTable rows={rows} columns={["operatorName", "openingAmount", "closingAmount", "status", "openedAt"]} />
@@ -1049,6 +1101,11 @@ function Reports() {
   return (
     <section className="page">
       <div className="page-title"><h2>Relatórios</h2><p>Vendas, formas de pagamento, clientes, estoque baixo e exportações.</p></div>
+      <InsightStrip items={[
+        ["Formas de pagamento", data?.byPayment?.length || 0, "com movimento", CreditCard, "rose"],
+        ["Estoque crítico", data?.lowStock?.length || 0, "variações baixas", Boxes, "amber"],
+        ["Total recebido", money((data?.byPayment || []).reduce((sum, item) => sum + Number(item._sum?.amount || 0), 0)), "no período", BadgeDollarSign, "green"]
+      ]} />
       <div className="panel-actions">
         <button onClick={() => exportCsv("estoque-baixo-sud-daiana.csv", data?.lowStock || [], ["product.name", "color", "size", "stock"])}>Exportar estoque baixo</button>
         <button onClick={() => exportCsv("pagamentos-sud-daiana.csv", data?.byPayment || [], ["method", "_sum.amount"])}>Exportar pagamentos</button>
@@ -1056,7 +1113,7 @@ function Reports() {
       <div className="metric-grid">
         {(data?.byPayment || []).map((item) => <article className="metric" key={item.method}><span>{item.method}</span><strong>{money(item._sum.amount)}</strong><FileText /></article>)}
       </div>
-      <div className="panel"><DataTable rows={data?.lowStock || []} columns={["product.name", "color", "size", "stock"]} /></div>
+      <div className="panel"><div className="panel-head compact"><h3>Estoque baixo</h3></div><DataTable rows={data?.lowStock || []} columns={["product.name", "color", "size", "stock"]} /></div>
     </section>
   );
 }
@@ -1072,6 +1129,11 @@ function OnlineStore() {
   return (
     <section className="page">
       <div className="page-title"><h2>Vitrine de Pedido Online</h2><p>Catálogo simples para cliente escolher produtos e enviar pedido.</p></div>
+      <InsightStrip items={[
+        ["Produtos na vitrine", products.length, "visíveis para venda", ShoppingBag, "rose"],
+        ["Canal rápido", "WhatsApp", "pedido chega no delivery", Truck, "green"],
+        ["Status", "Ativo", "catálogo disponível", Heart, "purple"]
+      ]} />
       <div className="product-grid">{products.map((product) => <article className="product-card" key={product.id}><img src={product.imageUrl} alt="" /><strong>{product.name}</strong><span>{money(product.promoPrice || product.salePrice)}</span></article>)}</div>
       <button className="primary" onClick={order}>Simular pedido online</button>
       {message && <p className="notice">{message}</p>}
@@ -1099,7 +1161,18 @@ function SettingsPage() {
   }
   return (
     <section className="page two-col">
-      <div className="page-title"><h2>Configurações</h2><p>Dados da loja, fiscal, estoque, fidelidade e permissões.</p></div>
+      <div>
+        <div className="page-title"><h2>Configurações</h2><p>Dados da loja, fiscal, estoque, fidelidade e permissões.</p></div>
+        <div className="setup-card">
+          <strong>Checklist da loja</strong>
+          <span>Complete estes dados para deixar recibos, fiscal e atendimento prontos.</span>
+          <ul>
+            <li>Nome, telefone e WhatsApp da loja</li>
+            <li>Dados fiscais para NFC-e/NF-e</li>
+            <li>Ambiente fiscal e regime tributário</li>
+          </ul>
+        </div>
+      </div>
       <form className="panel form-stack" onSubmit={save}>
         {fields.map(([field, label]) => (
           <label key={field}>
@@ -1162,6 +1235,11 @@ function UsersPage() {
     <section className="page two-col">
       <div>
         <div className="page-title"><h2>Usuários e Permissões</h2><p>Controle quem acessa o sistema e o papel de cada pessoa na loja.</p></div>
+        <InsightStrip items={[
+          ["Usuários", rows.length, "com acesso", UserCog, "rose"],
+          ["Ativos", rows.filter((item) => item.active).length, "podem entrar", Heart, "green"],
+          ["Administradores", rows.filter((item) => item.role === "ADMIN").length, "controle total", Settings, "purple"]
+        ]} />
         <div className="panel">
           <div className="table-wrap">
             <table>
@@ -1169,7 +1247,7 @@ function UsersPage() {
               <tbody>
                 {rows.map((user) => (
                   <tr key={user.id}>
-                    <td>{user.name}</td>
+                    <td>{user.email === "admin@suddaiana.com" ? "Sud Daiana Modas" : user.name}</td>
                     <td>{user.email}</td>
                     <td>{roleLabel(user.role)}</td>
                     <td><StatusBadge value={user.active ? "ATIVO" : "INATIVO"} /></td>
@@ -1271,7 +1349,7 @@ function DataTable({ rows, columns, actions }) {
       <table>
         <thead><tr>{columns.map((col) => <th key={col}>{labels[col] || col}</th>)}{actions && <th>Ações</th>}</tr></thead>
         <tbody>
-          {safeRows.length === 0 && <tr><td colSpan={columns.length + (actions ? 1 : 0)}>Nenhum registro encontrado.</td></tr>}
+          {safeRows.length === 0 && <tr><td className="empty-cell" colSpan={columns.length + (actions ? 1 : 0)}><strong>Nenhum registro encontrado.</strong><span>Quando houver dados neste módulo, eles aparecerão aqui.</span></td></tr>}
           {safeRows.map((row, index) => (
             <tr key={row.id || index}>
               {columns.map((col) => <td key={col}>{value(row, col)}</td>)}
