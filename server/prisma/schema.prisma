@@ -1,0 +1,340 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CAIXA
+  VENDEDOR
+  ESTOQUISTA
+  ENTREGADOR
+}
+
+enum SaleStatus {
+  ABERTA
+  FINALIZADA
+  CANCELADA
+}
+
+enum PaymentMethod {
+  DINHEIRO
+  PIX
+  DEBITO
+  CREDITO
+  CREDIARIO
+  VALE_TROCA
+}
+
+enum DeliveryStatus {
+  NOVO
+  SEPARANDO
+  AGUARDANDO_PAGAMENTO
+  PRONTO_ENTREGA
+  SAIU_ENTREGA
+  ENTREGUE
+  CANCELADO
+}
+
+enum InvoiceStatus {
+  PENDENTE
+  AUTORIZADA
+  REJEITADA
+  CANCELADA
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(VENDEDOR)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  active    Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  active    Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id              Int             @id @default(autoincrement())
+  name            String
+  description     String?         @db.Text
+  sku             String          @unique
+  barcode         String?
+  imageUrl        String?
+  costPrice       Decimal         @db.Decimal(10, 2)
+  salePrice       Decimal         @db.Decimal(10, 2)
+  promoPrice      Decimal?        @db.Decimal(10, 2)
+  minStock        Int             @default(1)
+  location        String?
+  active          Boolean         @default(true)
+  onPromotion     Boolean         @default(false)
+  availableOnline Boolean         @default(true)
+  categoryId      Int
+  brandId         Int?
+  category        Category        @relation(fields: [categoryId], references: [id])
+  brand           Brand?          @relation(fields: [brandId], references: [id])
+  variants        ProductVariant[]
+  saleItems       SaleItem[]
+  stockMoves      StockMovement[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model ProductVariant {
+  id         Int             @id @default(autoincrement())
+  productId  Int
+  color      String
+  size       String
+  sku        String          @unique
+  barcode    String?
+  stock      Int             @default(0)
+  price      Decimal?        @db.Decimal(10, 2)
+  active     Boolean         @default(true)
+  product    Product         @relation(fields: [productId], references: [id])
+  saleItems  SaleItem[]
+  stockMoves StockMovement[]
+}
+
+model StockMovement {
+  id          Int             @id @default(autoincrement())
+  productId   Int
+  variantId   Int?
+  type        String
+  quantity    Int
+  reason      String
+  reference   String?
+  product     Product         @relation(fields: [productId], references: [id])
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  createdAt   DateTime        @default(now())
+}
+
+model Customer {
+  id              Int               @id @default(autoincrement())
+  name            String
+  phone           String
+  cpf             String?
+  email           String?
+  birthDate       DateTime?
+  notes           String?           @db.Text
+  loyaltyPoints   Int               @default(0)
+  address         String?
+  city            String?
+  district        String?
+  sales           Sale[]
+  creditAccounts CreditAccount[]
+  deliveries      DeliveryOrder[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Sale {
+  id            Int           @id @default(autoincrement())
+  code          String        @unique
+  status        SaleStatus    @default(FINALIZADA)
+  customerId    Int?
+  userId        Int
+  subtotal      Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  profit        Decimal       @default(0) @db.Decimal(10, 2)
+  notes         String?
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
+  items         SaleItem[]
+  payments      Payment[]
+  creditAccount CreditAccount?
+  invoice       Invoice?
+  deliveryOrder DeliveryOrder?
+  createdAt     DateTime      @default(now())
+}
+
+model SaleItem {
+  id          Int             @id @default(autoincrement())
+  saleId      Int
+  productId   Int
+  variantId   Int?
+  quantity    Int
+  unitPrice   Decimal         @db.Decimal(10, 2)
+  discount    Decimal         @default(0) @db.Decimal(10, 2)
+  total       Decimal         @db.Decimal(10, 2)
+  sale        Sale            @relation(fields: [saleId], references: [id])
+  product     Product         @relation(fields: [productId], references: [id])
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+}
+
+model Payment {
+  id        Int           @id @default(autoincrement())
+  saleId    Int
+  method    PaymentMethod
+  amount    Decimal       @db.Decimal(10, 2)
+  details   String?
+  sale      Sale          @relation(fields: [saleId], references: [id])
+  createdAt DateTime      @default(now())
+}
+
+model CreditAccount {
+  id           Int                 @id @default(autoincrement())
+  saleId       Int                 @unique
+  customerId   Int
+  total        Decimal             @db.Decimal(10, 2)
+  paid         Decimal             @default(0) @db.Decimal(10, 2)
+  status       String              @default("PENDENTE")
+  customer     Customer            @relation(fields: [customerId], references: [id])
+  sale         Sale                @relation(fields: [saleId], references: [id])
+  installments CreditInstallment[]
+  createdAt    DateTime            @default(now())
+}
+
+model CreditInstallment {
+  id              Int           @id @default(autoincrement())
+  creditAccountId Int
+  number          Int
+  dueDate         DateTime
+  amount          Decimal       @db.Decimal(10, 2)
+  paidAmount      Decimal       @default(0) @db.Decimal(10, 2)
+  status          String        @default("PENDENTE")
+  paidAt          DateTime?
+  creditAccount   CreditAccount @relation(fields: [creditAccountId], references: [id])
+}
+
+model CashRegister {
+  id             Int            @id @default(autoincrement())
+  operatorName   String
+  openingAmount  Decimal        @db.Decimal(10, 2)
+  closingAmount  Decimal?       @db.Decimal(10, 2)
+  expectedAmount Decimal?       @db.Decimal(10, 2)
+  difference     Decimal?       @db.Decimal(10, 2)
+  status         String         @default("ABERTO")
+  movements      CashMovement[]
+  openedAt       DateTime       @default(now())
+  closedAt       DateTime?
+}
+
+model CashMovement {
+  id             Int          @id @default(autoincrement())
+  cashRegisterId Int
+  type           String
+  method         String
+  amount         Decimal      @db.Decimal(10, 2)
+  description    String
+  cashRegister   CashRegister @relation(fields: [cashRegisterId], references: [id])
+  createdAt      DateTime     @default(now())
+}
+
+model DeliveryOrder {
+  id          Int            @id @default(autoincrement())
+  saleId      Int?           @unique
+  customerId  Int?
+  customerName String
+  phone       String
+  address     String
+  district    String
+  city        String
+  reference   String?
+  fee         Decimal        @default(0) @db.Decimal(10, 2)
+  status      DeliveryStatus @default(NOVO)
+  payment     String
+  notes       String?
+  sale        Sale?          @relation(fields: [saleId], references: [id])
+  customer    Customer?      @relation(fields: [customerId], references: [id])
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Promotion {
+  id            Int      @id @default(autoincrement())
+  name          String
+  type          String
+  target        String
+  discountType  String
+  discountValue Decimal  @db.Decimal(10, 2)
+  minValue      Decimal? @db.Decimal(10, 2)
+  startsAt      DateTime
+  endsAt        DateTime
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model Coupon {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  description String?
+  discount    Decimal  @db.Decimal(10, 2)
+  active      Boolean  @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model LoyaltyTransaction {
+  id          Int      @id @default(autoincrement())
+  customerId  Int
+  points      Int
+  type        String
+  description String
+  createdAt   DateTime @default(now())
+}
+
+model Exchange {
+  id         Int      @id @default(autoincrement())
+  saleCode   String
+  reason     String
+  amount     Decimal  @db.Decimal(10, 2)
+  voucherCode String?
+  notes      String?
+  createdAt  DateTime @default(now())
+}
+
+model Invoice {
+  id        Int           @id @default(autoincrement())
+  saleId    Int           @unique
+  type      String
+  status    InvoiceStatus @default(PENDENTE)
+  number    String?
+  xmlPath   String?
+  danfePath String?
+  provider  String?
+  rejection String?
+  sale      Sale          @relation(fields: [saleId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model StoreConfig {
+  id                 Int      @id @default(autoincrement())
+  storeName          String
+  logoUrl            String?
+  cnpj               String?
+  stateRegistration  String?
+  address            String?
+  phone              String?
+  whatsapp           String?
+  email              String?
+  taxRegime          String?
+  fiscalEnvironment  String   @default("HOMOLOGACAO")
+  loyaltyRate        Decimal  @default(1) @db.Decimal(10, 2)
+  lowStockDefault    Int      @default(3)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
