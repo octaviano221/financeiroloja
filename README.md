@@ -29,7 +29,6 @@ cp server/.env.example server/.env
 ```env
 DATABASE_URL="mysql://usuario:senha@localhost:3306/sud_daiana_modas"
 JWT_SECRET="troque-essa-chave-em-producao"
-PORT=3333
 ```
 
 4. Rode as migracoes e gere dados de exemplo:
@@ -76,7 +75,6 @@ Depois configure a variavel `DATABASE_URL` assim:
 ```env
 DATABASE_URL="mysql://USUARIO:SENHA@HOST:3306/NOME_DO_BANCO"
 JWT_SECRET="crie-uma-chave-grande-e-secreta"
-PORT=3333
 ```
 
 Para criar as tabelas em producao:
