@@ -84,6 +84,28 @@ npm run prisma:deploy
 npm run seed
 ```
 
+## Configuracao recomendada na Hostinger
+
+Use estas opcoes quando a Hostinger pedir os dados da aplicacao Node.js:
+
+```text
+Branch: main
+Diretorio raiz: /
+Versao do Node: 22.x
+Gerenciador de pacotes: npm
+Comando de construcao: npm run build
+Arquivo de entrada: server.js
+```
+
+Variaveis de ambiente:
+
+```env
+DATABASE_URL=mysql://u974096246_loja:Octa1599512369%40@localhost:3306/u974096246_loja
+JWT_SECRET=sud-daiana-modas-chave-secreta-2026
+```
+
+No painel da Hostinger, a chave ja fica separada do valor. Entao no campo de valor da `DATABASE_URL`, comece direto com `mysql://`, sem escrever `DATABASE_URL=` de novo.
+
 Se for criar pelo phpMyAdmin, rode primeiro:
 
 ```sql
