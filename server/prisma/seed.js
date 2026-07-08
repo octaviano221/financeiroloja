@@ -9,14 +9,14 @@ async function main() {
     where: { email: "admin@suddaiana.com" },
     update: {},
     create: {
-      name: "Loja da Vo",
+      name: "Administrador Sud Daiana",
       email: "admin@suddaiana.com",
       password: await bcrypt.hash("admin123", 10),
       role: "ADMIN"
     }
   });
 
-  const categories = ["Vestidos", "Blusas", "Calcas", "Infantil", "Acessorios", "Lingerie"];
+  const categories = ["Vestidos", "Blusas", "Calças", "Infantil", "Acessórios", "Lingerie"];
   for (const name of categories) {
     await prisma.category.upsert({ where: { name }, update: {}, create: { name } });
   }
@@ -28,7 +28,7 @@ async function main() {
 
   const vestido = await prisma.category.findUnique({ where: { name: "Vestidos" } });
   const blusas = await prisma.category.findUnique({ where: { name: "Blusas" } });
-  const calcas = await prisma.category.findUnique({ where: { name: "Calcas" } });
+  const calcas = await prisma.category.findUnique({ where: { name: "Calças" } });
   const marca = await prisma.brand.findUnique({ where: { name: "Sud Daiana" } });
 
   const products = [
@@ -49,7 +49,7 @@ async function main() {
       ]
     },
     {
-      name: "Camiseta Basica Feminina",
+      name: "Camiseta Básica Feminina",
       sku: "CAM-BASICA",
       imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80",
       costPrice: 28,
@@ -63,7 +63,7 @@ async function main() {
       ]
     },
     {
-      name: "Calca Jeans Skinny",
+      name: "Calça Jeans Skinny",
       sku: "JEANS-SKINNY",
       imageUrl: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80",
       costPrice: 74,
@@ -103,7 +103,7 @@ async function main() {
   const now = new Date();
   const promotionSeeds = [
     {
-        name: "Dia das Maes 20% OFF",
+        name: "Dia das Mães 20% OFF",
         type: "CATEGORIA",
         target: "Vestidos",
         discountType: "PERCENTUAL",

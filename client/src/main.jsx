@@ -40,7 +40,7 @@ const nav = [
   { id: "cash", label: "Caixa", icon: WalletCards },
   { id: "fiscal", label: "Nota Fiscal", icon: Receipt },
   { id: "reports", label: "Relatórios", icon: BarChart3 },
-  { id: "users", label: "Usuarios", icon: UserCog },
+  { id: "users", label: "Usuários", icon: UserCog },
   { id: "online", label: "Pedido Online", icon: CalendarHeart },
   { id: "settings", label: "Configurações", icon: Settings }
 ];
@@ -359,7 +359,7 @@ function Customers() {
   }
   return (
     <section className="page two-col">
-      <div><div className="page-title"><h2>Clientes</h2><p>Histórico, WhatsApp, fidelidade e saldo de crediario.</p></div><DataTable rows={rows} columns={["name", "phone", "cpf", "loyaltyPoints"]} /></div>
+      <div><div className="page-title"><h2>Clientes</h2><p>Histórico, WhatsApp, fidelidade e saldo de crediário.</p></div><DataTable rows={rows} columns={["name", "phone", "cpf", "loyaltyPoints"]} /></div>
       <form className="panel form-stack" onSubmit={save}>
         <h3>Novo cliente</h3>
         {["name", "phone", "cpf", "email", "address"].map((field) => <input key={field} placeholder={field} value={form[field]} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />)}

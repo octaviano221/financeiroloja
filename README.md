@@ -1,6 +1,6 @@
 # Sud Daiana Modas
 
-Sistema web para gestao de loja de roupas familiar, com PDV, estoque, clientes, crediario, delivery, promocoes, fidelidade, caixa, fiscal e relatorios.
+Sistema web para gestão de loja de roupas familiar, com PDV, estoque, clientes, crediário, delivery, promoções, fidelidade, caixa, fiscal e relatórios.
 
 ## Tecnologias
 
