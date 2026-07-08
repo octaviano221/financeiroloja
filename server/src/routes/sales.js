@@ -159,7 +159,7 @@ router.post("/", async (req, res) => {
 router.post("/:id/cancel", async (req, res) => {
   if (req.user.role !== "ADMIN") return res.status(403).json({ message: "Apenas administrador cancela venda." });
   const id = Number(req.params.id);
-  const sale = await prisma.sale.findUnique({ where: { id }, include: { items: true } });
+  const sale = await prisma.sale.findUnique({ where: { id }, include: { items: true, payments: true, creditAccount: true } });
   if (!sale) return res.status(404).json({ message: "Venda não encontrada." });
   if (sale.status === "CANCELADA") return res.json(sale);
 
@@ -167,6 +167,30 @@ router.post("/:id/cancel", async (req, res) => {
     for (const item of sale.items) {
       if (item.variantId) await tx.productVariant.update({ where: { id: item.variantId }, data: { stock: { increment: item.quantity } } });
       await tx.stockMovement.create({ data: { productId: item.productId, variantId: item.variantId, type: "ENTRADA", quantity: item.quantity, reason: "Cancelamento de venda", reference: sale.code } });
+    }
+    if (sale.customerId) {
+      const customer = await tx.customer.findUnique({ where: { id: sale.customerId } });
+      const points = Math.floor(Number(sale.total || 0));
+      if (customer) {
+        await tx.customer.update({ where: { id: sale.customerId }, data: { loyaltyPoints: Math.max(Number(customer.loyaltyPoints || 0) - points, 0) } });
+        await tx.loyaltyTransaction.create({ data: { customerId: sale.customerId, points: -points, type: "SAIDA", description: `Estorno da venda ${sale.code}` } });
+      }
+    }
+    if (sale.creditAccount) {
+      await tx.creditInstallment.updateMany({ where: { creditAccountId: sale.creditAccount.id }, data: { status: "CANCELADA" } });
+      await tx.creditAccount.update({ where: { id: sale.creditAccount.id }, data: { status: "CANCELADA" } });
+    }
+    const openCash = await tx.cashRegister.findFirst({ where: { status: "ABERTO" }, orderBy: { openedAt: "desc" } });
+    if (openCash) {
+      await tx.cashMovement.create({
+        data: {
+          cashRegisterId: openCash.id,
+          type: "CANCELAMENTO",
+          method: sale.payments?.[0]?.method || "ESTORNO",
+          amount: sale.total,
+          description: `Cancelamento ${sale.code}`
+        }
+      });
     }
     await tx.sale.update({ where: { id }, data: { status: "CANCELADA" } });
   });

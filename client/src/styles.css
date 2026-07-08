@@ -1600,6 +1600,37 @@ tbody tr:hover {
   border: 1px solid var(--line);
 }
 
+.credit-box,
+.flow-hint {
+  display: grid;
+  gap: 8px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,241,245,0.72));
+}
+
+.credit-box strong,
+.flow-hint strong {
+  color: var(--ink);
+}
+
+.credit-box small,
+.flow-hint span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.credit-box label {
+  gap: 5px;
+}
+
+.flow-hint {
+  border-style: dashed;
+}
+
 .summary-lines span {
   display: flex;
   justify-content: space-between;

@@ -455,6 +455,8 @@ function PDV() {
   const [customerId, setCustomerId] = useState("");
   const [payment, setPayment] = useState("PIX");
   const [cashReceived, setCashReceived] = useState("");
+  const [creditInstallments, setCreditInstallments] = useState(1);
+  const [creditFirstDueDate, setCreditFirstDueDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [productSearch, setProductSearch] = useState("");
   const [message, setMessage] = useState("");
   const [lastSale, setLastSale] = useState(null);
@@ -515,6 +517,10 @@ function PDV() {
       setMessage("Valor recebido menor que o total da venda.");
       return;
     }
+    if (payment === "CREDIARIO" && !customerId) {
+      setMessage("Crediário exige cliente cadastrado. Selecione um cliente antes de finalizar.");
+      return;
+    }
     try {
       const sale = await api("/api/sales", {
         method: "POST",
@@ -522,13 +528,16 @@ function PDV() {
           customerId: customerId ? Number(customerId) : null,
           discount: 0,
           items: cart.map(({ productId, variantId, quantity, discount }) => ({ productId, variantId, quantity, discount })),
-          payments: [{ method: payment, amount: total }]
+          payments: [{ method: payment, amount: total }],
+          credit: payment === "CREDIARIO" ? { installments: Number(creditInstallments || 1), firstDueDate: creditFirstDueDate } : undefined
         })
       });
       setCart([]);
       setCashReceived("");
+      setCreditInstallments(1);
+      setCreditFirstDueDate(new Date().toISOString().slice(0, 10));
       setLastSale({ ...sale, customer: sale.customer || selectedCustomer, change, cashReceived: payment === "DINHEIRO" ? Number(cashReceived || 0) : null });
-      setMessage("Venda finalizada, estoque baixado e pontos gerados.");
+      setMessage(`Venda ${sale.code} finalizada: estoque baixado, caixa atualizado e dashboard pronto para atualizar.`);
       setProducts(await api("/api/products"));
     } catch (err) {
       setMessage(err.message.includes("Abra o caixa") ? `${err.message} Vá em Caixa e clique em Abrir caixa.` : err.message);
@@ -615,6 +624,22 @@ function PDV() {
             <input type="number" min="0" value={cashReceived} onChange={(event) => setCashReceived(event.target.value)} placeholder="0,00" />
           </label>
         )}
+        {payment === "CREDIARIO" && (
+          <div className="credit-box">
+            <strong>Crediário da venda</strong>
+            <small>Selecione um cliente para gerar as parcelas automaticamente.</small>
+            <label>Parcelas
+              <input type="number" min="1" max="12" value={creditInstallments} onChange={(event) => setCreditInstallments(event.target.value)} />
+            </label>
+            <label>Primeiro vencimento
+              <input type="date" value={creditFirstDueDate} onChange={(event) => setCreditFirstDueDate(event.target.value)} />
+            </label>
+          </div>
+        )}
+        <div className="flow-hint">
+          <strong>Fluxo automático</strong>
+          <span>Finalizou a venda? O sistema baixa estoque, movimenta o caixa, soma fidelidade e alimenta dashboard/relatórios.</span>
+        </div>
         <div className="summary-lines">
           <span>Subtotal <strong>{money(subtotal)}</strong></span>
           <span>Descontos <strong>{money(discountTotal)}</strong></span>
@@ -681,6 +706,7 @@ function ReceiptCard({ sale }) {
         <small>Última venda</small>
         <strong>{sale.code}</strong>
         <span>{money(sale.total)}</span>
+        <small>Fluxo concluído: estoque, caixa e relatórios atualizados.</small>
       </div>
       <button type="button" onClick={printReceipt}><Printer size={16} /> Imprimir</button>
     </div>
@@ -1001,6 +1027,13 @@ function CashPage() {
   const [movement, setMovement] = useState({ type: "ENTRADA", method: "DINHEIRO", amount: "", description: "" });
   const [message, setMessage] = useState("");
   const openCash = rows.find((cash) => cash.status === "ABERTO");
+  const cashExpected = openCash
+    ? Number(openCash.openingAmount || 0) + (openCash.movements || []).reduce((sum, item) => {
+      const amount = Number(item.amount || 0);
+      return ["SAIDA", "SANGRIA", "CANCELAMENTO"].includes(item.type) ? sum - amount : sum + amount;
+    }, 0)
+    : 0;
+  const movementCount = openCash?.movements?.length || 0;
 
   async function load() {
     setRows(await api("/api/cash"));
@@ -1035,10 +1068,9 @@ function CashPage() {
 
   async function closeCash() {
     if (!openCash) return;
-    const expected = Number(openCash.openingAmount || 0) + (openCash.movements || []).reduce((sum, item) => sum + Number(item.amount || 0), 0);
     setMessage("");
     try {
-      await api(`/api/cash/${openCash.id}/close`, { method: "POST", body: JSON.stringify({ closingAmount: expected, expectedAmount: expected }) });
+      await api(`/api/cash/${openCash.id}/close`, { method: "POST", body: JSON.stringify({ closingAmount: cashExpected, expectedAmount: cashExpected }) });
       await load();
       setMessage("Caixa fechado.");
     } catch (err) {
@@ -1052,8 +1084,8 @@ function CashPage() {
         <div className="page-title"><h2>Caixa</h2><p>Abertura, movimentos, vendas automáticas e fechamento.</p></div>
         <InsightStrip items={[
           ["Status do caixa", openCash ? "Aberto" : "Fechado", openCash ? "pronto para vender" : "abra antes do PDV", WalletCards, openCash ? "green" : "amber"],
-          ["Operador", openCash?.operatorName || "-", "responsável atual", Users, "rose"],
-          ["Abertura", money(openCash?.openingAmount || 0), "valor inicial", BadgeDollarSign, "purple"]
+          ["Movimentos", movementCount, "entradas, vendas e saídas", FileText, "rose"],
+          ["Total esperado", money(cashExpected), "para fechamento", BadgeDollarSign, "purple"]
         ]} />
         {message && <p className="notice">{message}</p>}
         <div className="panel">

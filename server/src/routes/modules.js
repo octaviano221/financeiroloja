@@ -183,8 +183,8 @@ router.post("/invoices", async (req, res) => {
 
 router.get("/reports", async (_req, res) => {
   const [byPayment, products, customers, lowStock] = await Promise.all([
-    prisma.payment.groupBy({ by: ["method"], _sum: { amount: true } }),
-    prisma.saleItem.groupBy({ by: ["productId"], _sum: { quantity: true, total: true }, orderBy: { _sum: { quantity: "desc" } }, take: 10 }),
+    prisma.payment.groupBy({ by: ["method"], where: { sale: { status: "FINALIZADA" } }, _sum: { amount: true } }),
+    prisma.saleItem.groupBy({ by: ["productId"], where: { sale: { status: "FINALIZADA" } }, _sum: { quantity: true, total: true }, orderBy: { _sum: { quantity: "desc" } }, take: 10 }),
     prisma.customer.findMany({ orderBy: { loyaltyPoints: "desc" }, take: 10 }),
     prisma.productVariant.findMany({ where: { stock: { lte: 3 } }, include: { product: true }, orderBy: { stock: "asc" }, take: 20 })
   ]);
