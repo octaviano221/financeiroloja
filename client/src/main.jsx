@@ -385,10 +385,14 @@ function PDV() {
         <div className="product-grid">
           {filteredProducts.map((product) => (
             <article className="product-card" key={product.id}>
-              <img src={product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80"} alt="" />
+              <div className="product-media">
+                <img src={product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80"} alt="" />
+                <span className="category-chip">{product.category?.name || "Produto"}</span>
+                <button className="favorite-btn" type="button" title="Favoritar"><Heart size={18} /></button>
+              </div>
               <strong>{product.name}</strong>
               <span>{money(product.promoPrice || product.salePrice)}</span>
-              <small>{product.category?.name || "Produto"} • {product.variants?.reduce((sum, item) => sum + Number(item.stock || 0), 0)} un.</small>
+              <small className="product-meta">{product.category?.name || "Produto"} <i /> {product.variants?.reduce((sum, item) => sum + Number(item.stock || 0), 0)} un.</small>
               <div className="variant-pills">
                 {(product.variants || []).filter((item) => item.stock > 0).slice(0, 4).map((variant) => (
                   <button key={variant.id} onClick={() => add(product, variant.id)}>
@@ -399,13 +403,23 @@ function PDV() {
             </article>
           ))}
         </div>
+        <div className="pdv-footer">
+          <span>Mostrando 1 a {filteredProducts.length} de {filteredProducts.length} produtos</span>
+          <div>
+            <button type="button">‹</button>
+            <strong>1</strong>
+            <button type="button">›</button>
+          </div>
+        </div>
       </div>
       <aside className="checkout">
-        <h3>Carrinho</h3>
-        <select value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
-          <option value="">Cliente não cadastrado</option>
-          {customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}
-        </select>
+        <h3><ShoppingBag size={18} /> Carrinho</h3>
+        <label>Cliente
+          <select value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
+            <option value="">Cliente não cadastrado</option>
+            {customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}
+          </select>
+        </label>
         <div className="cart-lines">
           {cart.map((item, index) => (
             <div className="cart-line" key={`${item.productId}-${index}`}>
@@ -420,7 +434,7 @@ function PDV() {
               <button className="icon-action" type="button" title="Remover item" onClick={() => remove(index)}><Trash2 size={16} /></button>
             </div>
           ))}
-          {!cart.length && <p className="empty-cart">Adicione produtos pelo catálogo para começar a venda.</p>}
+          {!cart.length && <p className="empty-cart"><Plus size={18} /> Adicione produtos pelo catálogo para começar a venda.</p>}
         </div>
         <label>Forma de pagamento
           <select value={payment} onChange={(event) => setPayment(event.target.value)}>
