@@ -1,4 +1,6 @@
 import "dotenv/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -13,6 +15,9 @@ import onlineRoutes from "./routes/online.js";
 import { auth } from "./middleware/auth.js";
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDist = path.resolve(__dirname, "../../client/dist");
 
 app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
@@ -27,6 +32,12 @@ app.use("/api/products", auth(), productRoutes);
 app.use("/api/customers", auth(), customerRoutes);
 app.use("/api/sales", auth(), saleRoutes);
 app.use("/api", auth(), moduleRoutes);
+
+app.use(express.static(clientDist));
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  return res.sendFile(path.join(clientDist, "index.html"));
+});
 
 app.use((err, _req, res, _next) => {
   console.error(err);
