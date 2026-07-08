@@ -302,17 +302,20 @@ function DashboardPremium() {
   useEffect(() => { loadDashboard().catch(console.error); }, []);
 
   const cards = data?.cards || {};
-  const chartMax = Math.max(...(data?.chart || []).map((point) => Number(point.total || 0)), 1);
+  const realChart = (data?.chart || []).filter((point) => Number(point.total || 0) > 0);
+  const chartData = realChart.length ? realChart : (data?.chart || []);
+  const chartMax = Math.max(...chartData.map((point) => Number(point.total || 0)), 1);
   const chartTop = Math.max(Math.ceil(chartMax / 100) * 100, 100);
   const chartScale = [chartTop, chartTop * 0.75, chartTop * 0.5, chartTop * 0.25, 0];
   const todaySalesCount = cards.todaySalesCount ?? cards.salesCount ?? 0;
   const monthSalesCount = cards.monthSalesCount ?? todaySalesCount;
   const saleText = (count, suffix) => `${count} ${count === 1 ? "venda" : "vendas"} ${suffix}`;
+  const mainProgressMax = Math.max(Number(cards.monthSales || 0), Number(cards.estimatedProfit || 0), monthSalesCount, 1);
   const mainCards = [
-    ["Vendas do Dia", money(cards.todaySales), saleText(todaySalesCount, "hoje"), BadgeDollarSign, "rose", "line"],
-    ["Vendas do Mês", money(cards.monthSales), saleText(monthSalesCount, "no mês"), BarChart3, "rose", "bars"],
-    ["Quantidade de Vendas", todaySalesCount, saleText(monthSalesCount, "no mês"), ShoppingBag, "purple", "line"],
-    ["Lucro Estimado", money(cards.estimatedProfit), "0% em relação ao mês anterior", WalletCards, "green", "line"]
+    ["Vendas do Dia", money(cards.todaySales), saleText(todaySalesCount, "hoje"), BadgeDollarSign, "rose", Number(cards.todaySales || 0)],
+    ["Vendas do Mês", money(cards.monthSales), saleText(monthSalesCount, "no mês"), BarChart3, "rose", Number(cards.monthSales || 0)],
+    ["Quantidade de Vendas", todaySalesCount, saleText(monthSalesCount, "no mês"), ShoppingBag, "purple", monthSalesCount],
+    ["Lucro Estimado", money(cards.estimatedProfit), "dados reais do mês", WalletCards, "green", Number(cards.estimatedProfit || 0)]
   ];
   const miniCards = [
     ["Crediário em Aberto", money(cards.openCredit), "clientes", CreditCard, "rose"],
@@ -336,7 +339,7 @@ function DashboardPremium() {
       </div>
 
       <div className="metric-grid dashboard-main-cards">
-        {mainCards.map(([label, value, helper, Icon, tone, spark]) => (
+        {mainCards.map(([label, value, helper, Icon, tone, progress]) => (
           <article className={`metric dashboard-card ${tone}`} key={label}>
             <div>
               <span>{label}</span>
@@ -344,7 +347,10 @@ function DashboardPremium() {
               <small>{helper}</small>
             </div>
             <Icon />
-            <Sparkline type={spark} />
+            <div className="metric-progress">
+              <span>Dados reais</span>
+              <i><b style={{ width: `${Math.min(Math.max((Number(progress || 0) / mainProgressMax) * 100, progress ? 12 : 0), 100)}%` }} /></i>
+            </div>
           </article>
         ))}
       </div>
@@ -367,10 +373,15 @@ function DashboardPremium() {
           <div className="panel-head"><h3>Gráfico de Vendas</h3><button>Este mês</button></div>
           <div className="sales-chart">
             <div className="chart-scale">{chartScale.map((value) => <span key={value}>{money(value)}</span>)}</div>
-            <div className="chart-area">
-              {(data?.chart || []).map((point) => {
+            <div className={`chart-area ${chartData.length <= 6 ? "compact" : ""}`}>
+              {chartData.map((point) => {
                 const total = Number(point.total || 0);
-                return <i key={point.label} className={total > 0 ? "" : "empty"} style={{ height: `${total > 0 ? Math.max((total / chartTop) * 180, 18) : 2}px` }} title={`Dia ${point.label}: ${money(total)}`} />;
+                return (
+                  <span className="chart-day" key={point.label}>
+                    <i className={total > 0 ? "" : "empty"} style={{ height: `${total > 0 ? Math.max((total / chartTop) * 180, 18) : 2}px` }} title={`Dia ${point.label}: ${money(total)}`} />
+                    <small>{point.label}</small>
+                  </span>
+                );
               })}
             </div>
           </div>
