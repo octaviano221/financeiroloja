@@ -13,25 +13,33 @@ const loginSchema = z.object({
 });
 
 router.post("/login", async (req, res) => {
-  const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ message: "Dados invalidos." });
+  try {
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "Dados invalidos." });
 
-  const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
-  if (!user || !user.active) return res.status(401).json({ message: "Usuario ou senha invalidos." });
+    const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+    if (!user || !user.active) return res.status(401).json({ message: "Usuario ou senha invalidos." });
 
-  const ok = await bcrypt.compare(parsed.data.password, user.password);
-  if (!ok) return res.status(401).json({ message: "Usuario ou senha invalidos." });
+    const ok = await bcrypt.compare(parsed.data.password, user.password);
+    if (!ok) return res.status(401).json({ message: "Usuario ou senha invalidos." });
 
-  const token = jwt.sign(
-    { id: user.id, name: user.name, email: user.email, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "12h" }
-  );
+    const token = jwt.sign(
+      { id: user.id, name: user.name, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "12h" }
+    );
 
-  res.json({
-    token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role }
-  });
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (error) {
+    console.error("Erro no login:", error);
+    res.status(500).json({
+      message: "Erro ao conectar no banco ou consultar usuario.",
+      detail: process.env.NODE_ENV === "production" ? undefined : error.message
+    });
+  }
 });
 
 router.get("/me", auth(), async (req, res) => {

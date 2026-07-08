@@ -25,6 +25,15 @@ app.use(express.json({ limit: "2mb" }));
 app.use(morgan("dev"));
 
 app.get("/health", (_req, res) => res.json({ ok: true, name: "Sud Daiana Modas API" }));
+app.get("/health/db", async (_req, res) => {
+  try {
+    const users = await import("./db.js").then(({ prisma }) => prisma.user.count());
+    res.json({ ok: true, database: "connected", users });
+  } catch (error) {
+    console.error("Erro no health/db:", error);
+    res.status(500).json({ ok: false, database: "error", message: error.message });
+  }
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/online", onlineRoutes);
 app.use("/api/dashboard", auth(), dashboardRoutes);
