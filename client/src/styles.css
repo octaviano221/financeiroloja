@@ -1308,6 +1308,57 @@ tbody tr:hover {
   margin-bottom: 22px;
 }
 
+.barcode-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid rgba(207,63,99,0.16);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,241,245,0.9)),
+    radial-gradient(circle at 100% 0%, rgba(185,131,53,0.12), transparent 30%);
+  box-shadow: var(--shadow);
+}
+
+.barcode-panel > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.barcode-panel svg {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  padding: 12px;
+  border-radius: 16px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--rose), #ee7c9b);
+  box-shadow: 0 14px 28px rgba(207,63,99,0.2);
+}
+
+.barcode-panel label {
+  flex: 1;
+  gap: 6px;
+  font-weight: 900;
+}
+
+.barcode-panel input {
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.barcode-panel button {
+  min-height: 48px;
+  padding-inline: 22px;
+}
+
 .pdv-tools span {
   color: var(--muted);
   font-size: 13px;
@@ -1667,6 +1718,13 @@ tbody tr:hover {
   font-weight: 800;
 }
 
+.receipt-card em {
+  color: var(--green);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
 .receipt-card button {
   display: inline-flex;
   align-items: center;
@@ -1802,9 +1860,14 @@ tbody tr:hover {
   }
 
   .pdv-tools,
+  .barcode-panel,
   .receipt-card {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .barcode-panel {
+    grid-template-columns: 1fr;
   }
 
   .cart-line {

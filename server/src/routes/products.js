@@ -42,7 +42,8 @@ router.get("/", async (req, res) => {
         { name: { contains: q } },
         { sku: { contains: q } },
         { barcode: { contains: q } },
-        { variants: { some: { sku: { contains: q } } } }
+        { variants: { some: { sku: { contains: q } } } },
+        { variants: { some: { barcode: { contains: q } } } }
       ]
     } : undefined,
     include: { category: true, brand: true, variants: true },

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BadgeDollarSign,
+  Barcode,
   BarChart3,
   Bell,
   Boxes,
@@ -458,6 +459,7 @@ function PDV() {
   const [creditInstallments, setCreditInstallments] = useState(1);
   const [creditFirstDueDate, setCreditFirstDueDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [productSearch, setProductSearch] = useState("");
+  const [barcodeQuery, setBarcodeQuery] = useState("");
   const [message, setMessage] = useState("");
   const [lastSale, setLastSale] = useState(null);
 
@@ -474,7 +476,8 @@ function PDV() {
   const filteredProducts = products.filter((product) => {
     const term = productSearch.trim().toLowerCase();
     if (!term) return true;
-    return [product.name, product.sku, product.category?.name].filter(Boolean).join(" ").toLowerCase().includes(term);
+    const variantText = (product.variants || []).map((variant) => [variant.sku, variant.barcode, variant.color, variant.size].filter(Boolean).join(" ")).join(" ");
+    return [product.name, product.sku, product.barcode, product.category?.name, variantText].filter(Boolean).join(" ").toLowerCase().includes(term);
   });
 
   function add(product, variantId) {
@@ -511,6 +514,33 @@ function PDV() {
     setCart((rows) => rows.filter((_, i) => i !== index));
   }
 
+  function scanBarcode(event) {
+    event.preventDefault();
+    const code = barcodeQuery.trim().toLowerCase();
+    if (!code) return;
+    for (const product of products) {
+      const variant = (product.variants || []).find((item) => [item.barcode, item.sku].filter(Boolean).some((value) => String(value).toLowerCase() === code));
+      if (variant) {
+        if (Number(variant.stock || 0) <= 0) {
+          setMessage(`Sem estoque para ${product.name} ${variant.size} ${variant.color}.`);
+          return;
+        }
+        add(product, variant.id);
+        setBarcodeQuery("");
+        setMessage(`Produto adicionado: ${product.name} (${variant.size} ${variant.color}).`);
+        return;
+      }
+      if ([product.barcode, product.sku].filter(Boolean).some((value) => String(value).toLowerCase() === code)) {
+        add(product);
+        setBarcodeQuery("");
+        setMessage(`Produto adicionado: ${product.name}.`);
+        return;
+      }
+    }
+    setProductSearch(barcodeQuery);
+    setMessage("Código não encontrado. Mostrei resultados próximos no catálogo.");
+  }
+
   async function finish() {
     setMessage("");
     if (payment === "DINHEIRO" && Number(cashReceived || 0) < total) {
@@ -536,7 +566,15 @@ function PDV() {
       setCashReceived("");
       setCreditInstallments(1);
       setCreditFirstDueDate(new Date().toISOString().slice(0, 10));
-      setLastSale({ ...sale, customer: sale.customer || selectedCustomer, change, cashReceived: payment === "DINHEIRO" ? Number(cashReceived || 0) : null });
+      setLastSale({
+        ...sale,
+        customer: sale.customer || selectedCustomer,
+        change,
+        cashReceived: payment === "DINHEIRO" ? Number(cashReceived || 0) : null,
+        saleMode: payment === "CREDIARIO" ? "FIADO" : "A_VISTA",
+        creditInstallments: payment === "CREDIARIO" ? Number(creditInstallments || 1) : null,
+        creditFirstDueDate: payment === "CREDIARIO" ? creditFirstDueDate : null
+      });
       setMessage(`Venda ${sale.code} finalizada: estoque baixado, caixa atualizado e dashboard pronto para atualizar.`);
       setProducts(await api("/api/products"));
     } catch (err) {
@@ -548,6 +586,16 @@ function PDV() {
     <section className="page pdv-grid">
       <div>
         <div className="page-title"><h2>PDV / Frente de Caixa</h2><p>Venda rápida com cliente, desconto, pagamento e baixa automática.</p></div>
+        <form className="barcode-panel" onSubmit={scanBarcode}>
+          <div>
+            <Barcode size={24} />
+            <label>
+              Ler código de barras ou SKU
+              <input value={barcodeQuery} onChange={(event) => setBarcodeQuery(event.target.value)} placeholder="Passe o leitor ou digite o código e pressione Enter" autoComplete="off" />
+            </label>
+          </div>
+          <button className="primary" type="submit">Adicionar</button>
+        </form>
         <div className="pdv-tools">
           <div className="search inline">
             <Search size={18} />
@@ -665,6 +713,13 @@ function ReceiptCard({ sale }) {
       </tr>
     `).join("");
     const payments = (sale.payments || []).map((payment) => `${formatText(payment.method)} ${money(payment.amount)}`).join("<br>");
+    const isCreditSale = sale.saleMode === "FIADO" || (sale.payments || []).some((payment) => payment.method === "CREDIARIO");
+    const modeLabel = isCreditSale ? "FIADO / CREDIÁRIO" : "À VISTA";
+    const firstDue = sale.creditFirstDueDate ? new Date(`${sale.creditFirstDueDate}T00:00:00`).toLocaleDateString("pt-BR") : "";
+    const creditRows = isCreditSale ? `
+      <p><strong>Condição:</strong> ${sale.creditInstallments || 1} parcela(s)${firstDue ? ` • 1º vencimento: ${firstDue}` : ""}</p>
+      <div class="signature">Assinatura do cliente</div>
+    ` : "";
     const popup = window.open("", "receipt", "width=380,height=620");
     popup.document.write(`
       <html>
@@ -677,11 +732,14 @@ function ReceiptCard({ sale }) {
             td, th { border-bottom: 1px solid #ddd; padding: 6px 0; font-size: 12px; text-align: left; }
             .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 12px; }
             .muted { color: #666; font-size: 12px; }
+            .badge { display: inline-block; margin: 6px auto 10px; padding: 6px 10px; border-radius: 999px; background: #fff1f5; color: #a72f4e; font-weight: bold; font-size: 12px; }
+            .signature { margin-top: 34px; padding-top: 8px; border-top: 1px solid #222; text-align: center; font-size: 12px; }
           </style>
         </head>
         <body>
           <h2>Sud Daiana Modas</h2>
           <p class="muted">Comprovante de venda</p>
+          <p class="badge">${modeLabel}</p>
           <p><strong>${sale.code}</strong></p>
           <p class="muted">${new Date(sale.createdAt || Date.now()).toLocaleString("pt-BR")}</p>
           <p>Cliente: ${sale.customer?.name || "Cliente não cadastrado"}</p>
@@ -690,6 +748,7 @@ function ReceiptCard({ sale }) {
             <tbody>${rows}</tbody>
           </table>
           <p>Pagamento:<br>${payments}</p>
+          ${creditRows}
           ${sale.cashReceived ? `<p>Recebido: ${money(sale.cashReceived)}<br>Troco: ${money(sale.change)}</p>` : ""}
           <p class="total">Total: ${money(sale.total)}</p>
           <p class="muted">Obrigada pela preferência!</p>
@@ -706,6 +765,7 @@ function ReceiptCard({ sale }) {
         <small>Última venda</small>
         <strong>{sale.code}</strong>
         <span>{money(sale.total)}</span>
+        <em>{sale.saleMode === "FIADO" ? "Cupom fiado pronto para assinatura" : "Cupom à vista pronto para imprimir"}</em>
         <small>Fluxo concluído: estoque, caixa e relatórios atualizados.</small>
       </div>
       <button type="button" onClick={printReceipt}><Printer size={16} /> Imprimir</button>
