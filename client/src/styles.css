@@ -1,12 +1,19 @@
 :root {
-  --rose: #e85d7b;
-  --rose-soft: #fff0f4;
-  --gold: #c69445;
-  --ink: #25232a;
-  --muted: #77717c;
-  --line: #eee6ea;
-  --bg: #fff8fa;
+  --rose: #cf3f63;
+  --rose-soft: #fff1f5;
+  --rose-strong: #a72f4e;
+  --gold: #b98335;
+  --gold-soft: #fff7e8;
+  --ink: #24212a;
+  --muted: #766f7b;
+  --line: #eadfe5;
+  --bg: #fff8fb;
   --panel: #ffffff;
+  --green: #2f9d62;
+  --amber: #c47a1f;
+  --blue: #4076c9;
+  --danger: #c93f55;
+  --shadow: 0 18px 60px rgba(91, 46, 61, 0.09);
 }
 
 * {
@@ -17,7 +24,10 @@ body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top left, rgba(207, 63, 99, 0.11), transparent 34%),
+    radial-gradient(circle at top right, rgba(185, 131, 53, 0.12), transparent 30%),
+    linear-gradient(180deg, #fff9fb 0%, #fff4f7 100%);
 }
 
 button,
@@ -45,9 +55,10 @@ button {
   width: min(440px, 100%);
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 34px;
-  box-shadow: 0 24px 80px rgba(107, 45, 58, 0.18);
+  box-shadow: 0 24px 90px rgba(107, 45, 58, 0.24);
+  backdrop-filter: blur(18px);
 }
 
 .brand-mark {
@@ -55,11 +66,14 @@ button {
   height: 62px;
   display: grid;
   place-items: center;
-  border-radius: 18px;
-  background: linear-gradient(135deg, var(--rose), #f6bdc9);
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.18), transparent),
+    linear-gradient(135deg, var(--rose), #f5a9ba);
   color: white;
   font-weight: 800;
   letter-spacing: 0.04em;
+  box-shadow: 0 12px 28px rgba(207, 63, 99, 0.28);
 }
 
 .brand-mark.small {
@@ -97,11 +111,12 @@ select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 9px;
   padding: 12px 13px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.94);
   color: var(--ink);
   outline: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
 
 input:focus,
@@ -113,12 +128,18 @@ textarea:focus {
 
 .primary {
   border: 0;
-  border-radius: 10px;
+  border-radius: 9px;
   padding: 13px 16px;
   color: white;
-  background: linear-gradient(135deg, var(--rose), #d9486a);
+  background: linear-gradient(135deg, var(--rose), var(--rose-strong));
   font-weight: 700;
-  box-shadow: 0 12px 28px rgba(232, 93, 123, 0.24);
+  box-shadow: 0 14px 30px rgba(207, 63, 99, 0.26);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px rgba(207, 63, 99, 0.3);
 }
 
 .primary:disabled {
@@ -141,7 +162,7 @@ textarea:focus {
 .app-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 272px 1fr;
 }
 
 .sidebar {
@@ -149,9 +170,11 @@ textarea:focus {
   top: 0;
   height: 100vh;
   padding: 22px 16px;
-  background: rgba(255, 255, 255, 0.9);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 246, 249, 0.94));
   border-right: 1px solid var(--line);
   overflow-y: auto;
+  box-shadow: 14px 0 44px rgba(91, 46, 61, 0.05);
 }
 
 .logo {
@@ -159,6 +182,7 @@ textarea:focus {
   align-items: center;
   gap: 12px;
   margin-bottom: 22px;
+  padding: 6px;
 }
 
 .logo strong {
@@ -177,7 +201,7 @@ textarea:focus {
 
 nav {
   display: grid;
-  gap: 4px;
+  gap: 5px;
 }
 
 nav button {
@@ -185,11 +209,12 @@ nav button {
   align-items: center;
   gap: 11px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 9px;
   padding: 11px 12px;
   background: transparent;
   color: #4f4a55;
   text-align: left;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
 }
 
 nav button.active,
@@ -197,13 +222,15 @@ nav button:hover {
   background: var(--rose-soft);
   color: var(--rose);
   font-weight: 700;
+  transform: translateX(2px);
 }
 
 .made {
   margin-top: 26px;
   padding: 14px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--rose-soft), #fff8ee);
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--rose-soft), var(--gold-soft));
+  border: 1px solid rgba(207, 63, 99, 0.1);
   color: #9c5363;
   font-size: 13px;
 }
@@ -219,8 +246,8 @@ nav button:hover {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 18px 24px;
-  background: rgba(255, 248, 250, 0.86);
+  padding: 16px 24px;
+  background: rgba(255, 248, 251, 0.84);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--line);
 }
@@ -233,8 +260,9 @@ nav button:hover {
   max-width: 540px;
   padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: white;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.86);
+  box-shadow: 0 8px 24px rgba(91, 46, 61, 0.05);
 }
 
 .search input {
@@ -247,6 +275,10 @@ nav button:hover {
   display: grid;
   gap: 2px;
   min-width: 120px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.82);
 }
 
 .user-pill span {
@@ -258,11 +290,18 @@ nav button:hover {
 }
 
 .page {
-  padding: 24px;
+  padding: 26px;
 }
 
 .page-title {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  display: grid;
+  gap: 4px;
+}
+
+.page-title h2 {
+  font-size: 28px;
+  letter-spacing: -0.02em;
 }
 
 .metric-grid {
@@ -277,8 +316,8 @@ nav button:hover {
 .checkout {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 18px 48px rgba(87, 48, 60, 0.06);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
 }
 
 .metric {
@@ -286,6 +325,16 @@ nav button:hover {
   min-height: 118px;
   padding: 18px;
   overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.94), rgba(255,246,249,0.96));
+}
+
+.metric::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
 }
 
 .metric span {
@@ -297,6 +346,7 @@ nav button:hover {
   display: block;
   margin-top: 12px;
   font-size: 24px;
+  letter-spacing: -0.02em;
 }
 
 .metric svg {
@@ -304,7 +354,7 @@ nav button:hover {
   right: 16px;
   bottom: 16px;
   color: var(--rose);
-  background: var(--rose-soft);
+  background: linear-gradient(135deg, var(--rose-soft), #fff);
   border-radius: 50%;
   padding: 9px;
   width: 44px;
@@ -360,6 +410,7 @@ nav button:hover {
   min-width: 8px;
   border-radius: 9px 9px 0 0;
   background: linear-gradient(180deg, var(--rose), #ffe4ea);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
 }
 
 .soft-list {
@@ -372,8 +423,9 @@ nav button:hover {
 
 .soft-list li {
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 9px;
   background: var(--rose-soft);
+  border: 1px solid rgba(207, 63, 99, 0.09);
 }
 
 .table-wrap {
@@ -383,7 +435,8 @@ nav button:hover {
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 620px;
 }
 
@@ -396,9 +449,19 @@ td {
 }
 
 th {
-  color: var(--muted);
+  color: #8d6572;
   font-size: 12px;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fff8fa;
+}
+
+tbody tr {
+  transition: background 120ms ease;
+}
+
+tbody tr:hover {
+  background: #fffafd;
 }
 
 .actions-cell {
@@ -410,7 +473,7 @@ th {
 .actions-cell button,
 .form-stack button[type="button"] {
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 8px;
   padding: 8px 10px;
   background: white;
   color: var(--ink);
@@ -441,6 +504,49 @@ th {
   color: var(--rose);
 }
 
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+
+.status-badge.success {
+  color: var(--green);
+  background: #eefaf3;
+  border-color: #cfecd9;
+}
+
+.status-badge.warning {
+  color: var(--amber);
+  background: #fff8e9;
+  border-color: #f4dfb7;
+}
+
+.status-badge.info {
+  color: var(--blue);
+  background: #eef5ff;
+  border-color: #d7e6ff;
+}
+
+.status-badge.danger {
+  color: var(--danger);
+  background: #fff0f2;
+  border-color: #f5cbd2;
+}
+
+.status-badge.muted {
+  color: var(--muted);
+  background: #f6f2f4;
+  border-color: var(--line);
+}
+
 .installments-list button:disabled {
   background: #eef8f0;
   color: #2d8a54;
@@ -465,17 +571,24 @@ th {
   gap: 8px;
   min-width: 0;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 12px;
   background: white;
   text-align: left;
+  box-shadow: var(--shadow);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 60px rgba(91, 46, 61, 0.12);
 }
 
 .product-card img {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 9px;
   background: var(--rose-soft);
 }
 

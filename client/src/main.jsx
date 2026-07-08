@@ -111,7 +111,7 @@ function Shell({ user, onLogout }) {
             );
           })}
         </nav>
-        <div className="made">Feito com amor para vestir historias.</div>
+        <div className="made">Feito com amor para vestir histórias.</div>
       </aside>
 
       <main className="content">
@@ -139,14 +139,14 @@ function Page({ page }) {
     dashboard: <Dashboard />,
     pdv: <PDV />,
     products: <Products />,
-    stock: <SimpleModule title="Estoque" endpoint="/api/products" description="Movimentações, inventário, filtros por cor/tamanho e alertas de estoque baixo." />,
+    stock: <SimpleModule title="Estoque" endpoint="/api/products" description="Movimentações, inventário, filtros por cor/tamanho e alertas de estoque baixo." columns={["name", "sku", "category.name", "salePrice", "active"]} />,
     customers: <Customers />,
     credit: <CreditPage />,
-    delivery: <SimpleModule title="Delivery" endpoint="/api/delivery" description="Pedidos do WhatsApp, retirada na loja, entrega própria e status de separação." />,
-    promos: <SimpleModule title="Promoções" endpoint="/api/promotions" description="Cupons, descontos por produto/categoria e campanhas por período." />,
-    loyalty: <SimpleModule title="Fidelidade" endpoint="/api/customers" description="Pontos, níveis Bronze/Prata/Ouro/VIP e campanhas para clientes inativos." />,
+    delivery: <SimpleModule title="Delivery" endpoint="/api/delivery" description="Pedidos do WhatsApp, retirada na loja, entrega própria e status de separação." columns={["customerName", "phone", "district", "city", "status", "payment", "fee", "createdAt"]} />,
+    promos: <SimpleModule title="Promoções" endpoint="/api/promotions" description="Cupons, descontos por produto/categoria e campanhas por período." columns={["name", "type", "target", "discountValue", "active", "startsAt", "endsAt"]} />,
+    loyalty: <SimpleModule title="Fidelidade" endpoint="/api/customers" description="Pontos, níveis Bronze/Prata/Ouro/VIP e campanhas para clientes inativos." columns={["name", "phone", "loyaltyPoints", "createdAt"]} />,
     cash: <CashPage />,
-    fiscal: <SimpleModule title="Nota Fiscal" endpoint="/api/invoices" description="Estrutura pronta para NFC-e/NF-e, XML, DANFE e provedor fiscal homologado." />,
+    fiscal: <SimpleModule title="Nota Fiscal" endpoint="/api/invoices" description="Estrutura pronta para NFC-e/NF-e, XML, DANFE e provedor fiscal homologado." columns={["type", "status", "number", "provider", "createdAt"]} />,
     reports: <Reports />,
     users: <UsersPage />,
     online: <OnlineStore />,
@@ -188,7 +188,7 @@ function Dashboard() {
       </div>
       <div className="dashboard-grid">
         <section className="panel wide">
-          <div className="panel-head"><h3>Grafico de Vendas</h3><button>Este mes</button></div>
+          <div className="panel-head"><h3>Gráfico de Vendas</h3><button>Este mês</button></div>
           <div className="chart">
             {(data?.chart || []).map((point) => <i key={point.label} style={{ height: `${Math.max(point.total / 55, 18)}px` }} title={`${point.label}: ${money(point.total)}`} />)}
           </div>
@@ -272,7 +272,7 @@ function PDV() {
       <aside className="checkout">
         <h3>Carrinho</h3>
         <select value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
-          <option value="">Cliente nao cadastrado</option>
+          <option value="">Cliente não cadastrado</option>
           {customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}
         </select>
         <div className="cart-lines">
@@ -369,14 +369,14 @@ function Customers() {
   );
 }
 
-function SimpleModule({ title, endpoint, description }) {
+function SimpleModule({ title, endpoint, description, columns = ["id", "name", "status", "total", "createdAt"] }) {
   const [rows, setRows] = useState([]);
   useEffect(() => { api(endpoint).then((data) => setRows(Array.isArray(data) ? data : [data])).catch(() => setRows([])); }, [endpoint]);
   return (
     <section className="page">
       <div className="page-title"><h2>{title}</h2><p>{description}</p></div>
       <div className="panel">
-        <DataTable rows={rows} columns={["id", "name", "status", "total", "createdAt"]} />
+        <DataTable rows={rows} columns={columns} />
       </div>
     </section>
   );
@@ -562,6 +562,17 @@ function OnlineStore() {
 
 function SettingsPage() {
   const [form, setForm] = useState({});
+  const fields = [
+    ["storeName", "Nome da loja"],
+    ["cnpj", "CNPJ"],
+    ["stateRegistration", "Inscrição Estadual"],
+    ["address", "Endereço"],
+    ["phone", "Telefone"],
+    ["whatsapp", "WhatsApp"],
+    ["email", "E-mail"],
+    ["taxRegime", "Regime tributário"],
+    ["fiscalEnvironment", "Ambiente fiscal"]
+  ];
   useEffect(() => { api("/api/settings").then((data) => setForm(data || {})); }, []);
   async function save(event) {
     event.preventDefault();
@@ -571,8 +582,13 @@ function SettingsPage() {
     <section className="page two-col">
       <div className="page-title"><h2>Configurações</h2><p>Dados da loja, fiscal, estoque, fidelidade e permissões.</p></div>
       <form className="panel form-stack" onSubmit={save}>
-        {["storeName", "cnpj", "stateRegistration", "address", "phone", "whatsapp", "email", "taxRegime", "fiscalEnvironment"].map((field) => <input key={field} placeholder={field} value={form?.[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />)}
-        <button className="primary">Salvar configuracoes</button>
+        {fields.map(([field, label]) => (
+          <label key={field}>
+            {label}
+            <input placeholder={label} value={form?.[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
+          </label>
+        ))}
+        <button className="primary">Salvar configurações</button>
       </form>
     </section>
   );
@@ -594,7 +610,7 @@ function UsersPage() {
   function edit(user) {
     setEditingId(user.id);
     setForm({ name: user.name, email: user.email, password: "", role: user.role, active: user.active });
-    setMessage("Editando usuario. Deixe a senha vazia para manter a atual.");
+    setMessage("Editando usuário. Deixe a senha vazia para manter a atual.");
   }
 
   async function save(event) {
@@ -607,7 +623,7 @@ function UsersPage() {
       setForm(empty);
       setEditingId(null);
       await load();
-      setMessage(editingId ? "Usuario atualizado." : "Usuario criado.");
+      setMessage(editingId ? "Usuário atualizado." : "Usuário criado.");
     } catch (err) {
       setMessage(err.message);
     }
@@ -630,14 +646,14 @@ function UsersPage() {
         <div className="panel">
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th>Acoes</th></tr></thead>
+              <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
               <tbody>
                 {rows.map((user) => (
                   <tr key={user.id}>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
                     <td>{roleLabel(user.role)}</td>
-                    <td>{user.active ? "Ativo" : "Inativo"}</td>
+                    <td><StatusBadge value={user.active ? "ATIVO" : "INATIVO"} /></td>
                     <td className="actions-cell">
                       <button onClick={() => edit(user)}>Editar</button>
                       <button onClick={() => toggle(user)}>{user.active ? "Desativar" : "Ativar"}</button>
@@ -650,7 +666,7 @@ function UsersPage() {
         </div>
       </div>
       <form className="panel form-stack" onSubmit={save}>
-        <h3>{editingId ? "Editar usuario" : "Novo usuario"}</h3>
+        <h3>{editingId ? "Editar usuário" : "Novo usuário"}</h3>
         <input placeholder="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <input type="password" placeholder={editingId ? "Nova senha opcional" : "Senha"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
@@ -661,9 +677,9 @@ function UsersPage() {
           <option value="ESTOQUISTA">Estoquista</option>
           <option value="ENTREGADOR">Entregador</option>
         </select>
-        <label className="check-row"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Usuario ativo</label>
-        <button className="primary">{editingId ? "Salvar alteracoes" : "Criar usuario"}</button>
-        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edicao</button>}
+        <label className="check-row"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Usuário ativo</label>
+        <button className="primary">{editingId ? "Salvar alterações" : "Criar usuário"}</button>
+        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edição</button>}
         {message && <p className="notice">{message}</p>}
       </form>
     </section>
@@ -685,13 +701,26 @@ function DataTable({ rows, columns }) {
   const labels = {
     id: "Código",
     code: "Venda",
+    sku: "SKU",
     name: "Nome",
+    customerName: "Cliente",
     phone: "Telefone",
     cpf: "CPF",
     email: "E-mail",
+    district: "Bairro",
+    city: "Cidade",
+    payment: "Pagamento",
+    fee: "Taxa",
     active: "Ativo",
     status: "Status",
     total: "Total",
+    type: "Tipo",
+    target: "Alvo",
+    discountValue: "Desconto",
+    startsAt: "Início",
+    endsAt: "Fim",
+    number: "Número",
+    provider: "Provedor",
     salePrice: "Preço de venda",
     openingAmount: "Valor inicial",
     closingAmount: "Valor final",
@@ -710,9 +739,11 @@ function DataTable({ rows, columns }) {
 
   function value(row, key) {
     const val = key.split(".").reduce((acc, part) => acc?.[part], row);
-    if (key.toLowerCase().includes("price") || key === "total") return money(val);
-    if (key.toLowerCase().includes("created") && val) return new Date(val).toLocaleDateString("pt-BR");
-    if (typeof val === "boolean") return val ? "Sim" : "Nao";
+    if (key.toLowerCase().includes("price") || ["total", "fee", "discountValue", "openingAmount", "closingAmount"].includes(key)) return money(val);
+    if ((key.toLowerCase().includes("at") || key === "openedAt") && val) return new Date(val).toLocaleDateString("pt-BR");
+    if (key === "status") return <StatusBadge value={val} />;
+    if (typeof val === "boolean") return <StatusBadge value={val ? "SIM" : "NÃO"} />;
+    if (typeof val === "string" && /^[A-Z_]+$/.test(val)) return formatText(val);
     if (val && typeof val === "object") return JSON.stringify(val);
     return val ?? "-";
   }
@@ -727,6 +758,42 @@ function DataTable({ rows, columns }) {
       </table>
     </div>
   );
+}
+
+function StatusBadge({ value }) {
+  const text = String(value || "-");
+  const tone = {
+    ATIVO: "success",
+    SIM: "success",
+    PAGA: "success",
+    ENTREGUE: "success",
+    AUTORIZADA: "success",
+    FINALIZADA: "success",
+    ABERTO: "warning",
+    ABERTA: "warning",
+    PENDENTE: "warning",
+    NOVO: "warning",
+    AGUARDANDO_PAGAMENTO: "warning",
+    SEPARANDO: "info",
+    PRONTO_ENTREGA: "info",
+    SAIU_ENTREGA: "info",
+    INATIVO: "muted",
+    NÃO: "muted",
+    FECHADO: "muted",
+    CANCELADO: "danger",
+    CANCELADA: "danger",
+    REJEITADA: "danger",
+    VENCIDA: "danger"
+  }[text] || "info";
+
+  return <span className={`status-badge ${tone}`}>{formatText(text)}</span>;
+}
+
+function formatText(value) {
+  return String(value || "-")
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase());
 }
 
 function App() {

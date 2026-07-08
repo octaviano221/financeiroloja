@@ -55,7 +55,7 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const parsed = productSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ message: "Produto invalido.", issues: parsed.error.issues });
+  if (!parsed.success) return res.status(400).json({ message: "Produto inválido.", issues: parsed.error.issues });
   const { variants, ...data } = parsed.data;
   const product = await prisma.product.create({
     data: {
@@ -69,7 +69,7 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const parsed = productSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ message: "Produto invalido.", issues: parsed.error.issues });
+  if (!parsed.success) return res.status(400).json({ message: "Produto inválido.", issues: parsed.error.issues });
   const id = Number(req.params.id);
   const { variants, ...data } = parsed.data;
 

@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ message: "Cliente invalido.", issues: parsed.error.issues });
+  if (!parsed.success) return res.status(400).json({ message: "Cliente inválido.", issues: parsed.error.issues });
   const customer = await prisma.customer.create({
     data: { ...parsed.data, birthDate: parsed.data.birthDate ? new Date(parsed.data.birthDate) : null }
   });
@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ message: "Cliente invalido.", issues: parsed.error.issues });
+  if (!parsed.success) return res.status(400).json({ message: "Cliente inválido.", issues: parsed.error.issues });
   const customer = await prisma.customer.update({
     where: { id: Number(req.params.id) },
     data: { ...parsed.data, birthDate: parsed.data.birthDate ? new Date(parsed.data.birthDate) : null }

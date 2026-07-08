@@ -37,7 +37,7 @@ router.get("/", async (_req, res) => {
 
 router.post("/", async (req, res) => {
   const parsed = saleSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ message: "Venda invalida.", issues: parsed.error.issues });
+  if (!parsed.success) return res.status(400).json({ message: "Venda inválida.", issues: parsed.error.issues });
 
   const data = parsed.data;
   const sale = await prisma.$transaction(async (tx) => {
@@ -113,7 +113,7 @@ router.post("/", async (req, res) => {
 
     const creditPayment = data.payments.find((payment) => payment.method === "CREDIARIO");
     if (creditPayment) {
-      if (!data.customerId) throw new Error("Crediario exige cliente cadastrado.");
+      if (!data.customerId) throw new Error("Crediário exige cliente cadastrado.");
       const installments = data.credit?.installments || 1;
       const amount = money(creditPayment.amount) / installments;
       const firstDue = new Date(data.credit?.firstDueDate || Date.now());
@@ -155,7 +155,7 @@ router.post("/:id/cancel", async (req, res) => {
   if (req.user.role !== "ADMIN") return res.status(403).json({ message: "Apenas administrador cancela venda." });
   const id = Number(req.params.id);
   const sale = await prisma.sale.findUnique({ where: { id }, include: { items: true } });
-  if (!sale) return res.status(404).json({ message: "Venda nao encontrada." });
+  if (!sale) return res.status(404).json({ message: "Venda não encontrada." });
   if (sale.status === "CANCELADA") return res.json(sale);
 
   await prisma.$transaction(async (tx) => {

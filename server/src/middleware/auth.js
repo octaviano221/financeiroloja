@@ -4,7 +4,7 @@ export function auth(requiredRoles = []) {
   return (req, res, next) => {
     const header = req.headers.authorization;
     if (!header?.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Token nao informado." });
+      return res.status(401).json({ message: "Token não informado." });
     }
 
     try {
@@ -13,12 +13,12 @@ export function auth(requiredRoles = []) {
       req.user = payload;
 
       if (requiredRoles.length && !requiredRoles.includes(payload.role)) {
-        return res.status(403).json({ message: "Permissao insuficiente." });
+        return res.status(403).json({ message: "Permissão insuficiente." });
       }
 
       return next();
     } catch {
-      return res.status(401).json({ message: "Token invalido." });
+      return res.status(401).json({ message: "Token inválido." });
     }
   };
 }

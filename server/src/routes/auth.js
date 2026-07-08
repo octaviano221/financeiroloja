@@ -15,13 +15,13 @@ const loginSchema = z.object({
 router.post("/login", async (req, res) => {
   try {
     const parsed = loginSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Dados invalidos." });
+    if (!parsed.success) return res.status(400).json({ message: "Dados inválidos." });
 
     const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
-    if (!user || !user.active) return res.status(401).json({ message: "Usuario ou senha invalidos." });
+    if (!user || !user.active) return res.status(401).json({ message: "Usuário ou senha inválidos." });
 
     const ok = await bcrypt.compare(parsed.data.password, user.password);
-    if (!ok) return res.status(401).json({ message: "Usuario ou senha invalidos." });
+    if (!ok) return res.status(401).json({ message: "Usuário ou senha inválidos." });
 
     const token = jwt.sign(
       { id: user.id, name: user.name, email: user.email, role: user.role },
@@ -36,7 +36,7 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.error("Erro no login:", error);
     res.status(500).json({
-      message: "Erro ao conectar no banco ou consultar usuario.",
+      message: "Erro ao conectar no banco ou consultar usuário.",
       detail: process.env.NODE_ENV === "production" ? undefined : error.message
     });
   }
