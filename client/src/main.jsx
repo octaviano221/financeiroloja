@@ -611,7 +611,7 @@ function PDV() {
               <input value={barcodeQuery} onChange={(event) => setBarcodeQuery(event.target.value)} placeholder="Passe o leitor ou digite o código e pressione Enter" autoComplete="off" />
             </label>
           </div>
-          <button className="primary" type="submit"><Plus size={18} /> Adicionar</button>
+          <button className="primary scanner-add" type="submit"><Plus size={17} /> Adicionar</button>
         </form>
         <div className="pdv-tools">
           <div className="search inline">
