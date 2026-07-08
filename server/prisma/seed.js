@@ -101,9 +101,8 @@ async function main() {
   });
 
   const now = new Date();
-  await prisma.promotion.createMany({
-    data: [
-      {
+  const promotionSeeds = [
+    {
         name: "Dia das Maes 20% OFF",
         type: "CATEGORIA",
         target: "Vestidos",
@@ -124,9 +123,12 @@ async function main() {
         endsAt: new Date(now.getFullYear(), now.getMonth() + 2, 1),
         active: true
       }
-    ],
-    skipDuplicates: true
-  });
+  ];
+
+  for (const promo of promotionSeeds) {
+    const exists = await prisma.promotion.findFirst({ where: { name: promo.name } });
+    if (!exists) await prisma.promotion.create({ data: promo });
+  }
 
   await prisma.storeConfig.upsert({
     where: { id: 1 },
@@ -141,9 +143,13 @@ async function main() {
     }
   });
 
-  await prisma.deliveryOrder.createMany({
-    data: [
-      {
+  const deliveryExists = await prisma.deliveryOrder.findFirst({
+    where: { customerName: customer.name, phone: customer.phone, status: "SEPARANDO" }
+  });
+
+  if (!deliveryExists) {
+    await prisma.deliveryOrder.create({
+      data: {
         customerId: customer.id,
         customerName: customer.name,
         phone: customer.phone,
@@ -155,9 +161,8 @@ async function main() {
         status: "SEPARANDO",
         notes: "Enviar mensagem antes de sair."
       }
-    ],
-    skipDuplicates: true
-  });
+    });
+  }
 }
 
 main()

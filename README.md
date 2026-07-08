@@ -62,6 +62,40 @@ API: `http://localhost:3333`
 4. Rode `npm install`, `npm run prisma:migrate`, `npm run seed` e `npm run build`.
 5. Publique `client/dist` como frontend estatico e mantenha o backend Node ativo em uma hospedagem com suporte a Node.js.
 
+## Criar banco MySQL
+
+No painel da Hostinger, crie um banco MySQL e anote:
+
+- Nome do banco;
+- Usuario do banco;
+- Senha;
+- Host do banco.
+
+Depois configure a variavel `DATABASE_URL` assim:
+
+```env
+DATABASE_URL="mysql://USUARIO:SENHA@HOST:3306/NOME_DO_BANCO"
+JWT_SECRET="crie-uma-chave-grande-e-secreta"
+PORT=3333
+```
+
+Para criar as tabelas em producao:
+
+```bash
+npm run prisma:deploy
+npm run seed
+```
+
+Se for criar pelo phpMyAdmin, rode primeiro:
+
+```sql
+CREATE DATABASE IF NOT EXISTS sud_daiana_modas
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+Depois use o arquivo `server/prisma/migrations/20260708000000_init/migration.sql` para criar todas as tabelas.
+
 ## Modulos incluidos
 
 - Dashboard com indicadores e alertas
