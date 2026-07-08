@@ -1242,6 +1242,198 @@ function Reports() {
 
 function OnlineStore() {
   const [products, setProducts] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("todos");
+  const [form, setForm] = useState({
+    customerName: "",
+    phone: "",
+    address: "",
+    district: "",
+    city: "",
+    reference: "",
+    payment: "Pix",
+    deliveryMode: "Retirada na loja"
+  });
+  const [message, setMessage] = useState("");
+
+  useEffect(() => { api("/api/online/catalog").then(setProducts).catch((err) => setMessage(err.message)); }, []);
+
+  const featured = products.filter((product) => product.onPromotion || product.promoPrice);
+  const filtered = products.filter((product) => {
+    const term = search.trim().toLowerCase();
+    const stock = (product.variants || []).reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
+    const text = [product.name, product.category?.name, product.brand?.name].filter(Boolean).join(" ").toLowerCase();
+    const matchesText = !term || text.includes(term);
+    const matchesFilter = filter === "todos"
+      || (filter === "promocoes" && (product.onPromotion || product.promoPrice))
+      || (filter === "disponiveis" && stock > 0);
+    return matchesText && matchesFilter;
+  });
+  const cartTotal = cart.reduce((sum, item) => sum + item.quantity * Number(item.price || 0), 0);
+  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  function addToOnlineCart(product, variantId) {
+    const variant = variantId
+      ? product.variants?.find((item) => String(item.id) === String(variantId))
+      : product.variants?.find((item) => Number(item.stock || 0) > 0);
+    if (!variant) {
+      setMessage("Produto sem estoque disponível para pedido online.");
+      return;
+    }
+    const price = Number(variant.price || product.promoPrice || product.salePrice);
+    const key = `${product.id}-${variant.id}`;
+    setMessage("");
+    setCart((current) => {
+      const existing = current.find((item) => item.key === key);
+      if (existing) {
+        return current.map((item) => item.key === key ? { ...item, quantity: Math.min(item.quantity + 1, Number(variant.stock || 1)) } : item);
+      }
+      return [...current, { key, name: product.name, color: variant.color, size: variant.size, price, quantity: 1, stock: Number(variant.stock || 1) }];
+    });
+  }
+
+  function updateOnlineCart(key, quantity) {
+    setCart((current) => current.map((item) => item.key === key ? { ...item, quantity: Math.max(1, Math.min(Number(quantity || 1), item.stock)) } : item));
+  }
+
+  async function order(event) {
+    event.preventDefault();
+    setMessage("");
+    if (!cart.length) {
+      setMessage("Adicione pelo menos um produto ao pedido online.");
+      return;
+    }
+    try {
+      const itemsText = cart.map((item) => `${item.quantity}x ${item.name} - ${item.size} ${item.color} (${money(item.price)})`).join("; ");
+      await api("/api/online/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          customerName: form.customerName,
+          phone: form.phone,
+          address: form.deliveryMode === "Entrega" ? form.address : "Retirada na loja",
+          district: form.deliveryMode === "Entrega" ? form.district : "Centro",
+          city: form.city || "Cidade",
+          reference: form.reference,
+          payment: form.payment,
+          notes: `Pedido online (${form.deliveryMode}) - ${itemsText}. Total estimado: ${money(cartTotal)}`
+        })
+      });
+      setCart([]);
+      setForm({ customerName: "", phone: "", address: "", district: "", city: "", reference: "", payment: "Pix", deliveryMode: "Retirada na loja" });
+      setMessage("Pedido online recebido no painel de delivery.");
+    } catch (err) {
+      setMessage(err.message);
+    }
+  }
+
+  return (
+    <section className="page online-page">
+      <div className="online-hero">
+        <div>
+          <span className="eyebrow">Vitrine mobile</span>
+          <h2>Pedido Online Sud Daiana Modas</h2>
+          <p>Catálogo bonito para vender pelo celular, divulgar promoções e receber pedidos no delivery.</p>
+          <div className="online-hero-actions">
+            <button className={filter === "todos" ? "active" : ""} type="button" onClick={() => setFilter("todos")}>Tudo</button>
+            <button className={filter === "promocoes" ? "active" : ""} type="button" onClick={() => setFilter("promocoes")}>Promoções</button>
+            <button className={filter === "disponiveis" ? "active" : ""} type="button" onClick={() => setFilter("disponiveis")}>Disponíveis</button>
+          </div>
+        </div>
+        <div className="online-hero-card">
+          <ShoppingBag size={26} />
+          <strong>{itemCount} itens</strong>
+          <span>{money(cartTotal)} no carrinho</span>
+        </div>
+      </div>
+      <InsightStrip items={[
+        ["Produtos na vitrine", products.length, "visíveis para venda", ShoppingBag, "rose"],
+        ["Promoções", featured.length, "campanhas ativas", Gift, "amber"],
+        ["Canal rápido", "Delivery", "pedido chega no painel", Truck, "green"]
+      ]} />
+      <div className="online-layout">
+        <div>
+          <div className="online-search">
+            <Search size={18} />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar vestido, blusa, calça..." />
+          </div>
+          <div className="online-product-grid">
+            {filtered.map((product) => {
+              const stock = (product.variants || []).reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
+              const price = Number(product.promoPrice || product.salePrice);
+              const hasPromo = product.onPromotion || product.promoPrice;
+              return (
+                <article className="online-card" key={product.id}>
+                  <div className="online-media">
+                    <img src={product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80"} alt="" />
+                    <span>{hasPromo ? "Promoção" : product.category?.name || "Produto"}</span>
+                  </div>
+                  <div className="online-card-body">
+                    <strong>{product.name}</strong>
+                    <p>{product.description || `${product.category?.name || "Moda"} com pronta entrega na Sud Daiana Modas.`}</p>
+                    <div className="online-price-row">
+                      <span>{money(price)}</span>
+                      <small>{stock} un. disponíveis</small>
+                    </div>
+                    <div className="variant-pills">
+                      {(product.variants || []).filter((item) => item.stock > 0).slice(0, 4).map((variant) => (
+                        <button key={variant.id} type="button" onClick={() => addToOnlineCart(product, variant.id)}>
+                          {variant.size} {variant.color} · {variant.stock}
+                        </button>
+                      ))}
+                    </div>
+                    <button className="primary online-add" type="button" onClick={() => addToOnlineCart(product)}><Plus size={16} /> Adicionar</button>
+                  </div>
+                </article>
+              );
+            })}
+            {!filtered.length && <EmptyState title="Nenhum produto encontrado." text="Tente outro termo ou marque produtos como disponíveis online." />}
+          </div>
+        </div>
+        <form className="online-checkout" onSubmit={order}>
+          <h3><Receipt size={18} /> Pedido</h3>
+          <div className="online-cart-lines">
+            {cart.map((item) => (
+              <div className="online-cart-line" key={item.key}>
+                <span>{item.name}<small>{item.size} {item.color}</small></span>
+                <input type="number" min="1" max={item.stock} value={item.quantity} onChange={(event) => updateOnlineCart(item.key, event.target.value)} />
+                <strong>{money(item.quantity * item.price)}</strong>
+                <button type="button" onClick={() => setCart((current) => current.filter((row) => row.key !== item.key))}><X size={14} /></button>
+              </div>
+            ))}
+            {!cart.length && <p className="empty-cart"><ShoppingBag size={20} /> Escolha os produtos para montar o pedido.</p>}
+          </div>
+          <div className="total"><span>Total estimado</span><strong>{money(cartTotal)}</strong></div>
+          <input required placeholder="Nome da cliente" value={form.customerName} onChange={(event) => setForm({ ...form, customerName: event.target.value })} />
+          <input required placeholder="WhatsApp" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
+          <select value={form.deliveryMode} onChange={(event) => setForm({ ...form, deliveryMode: event.target.value })}>
+            <option>Retirada na loja</option>
+            <option>Entrega</option>
+          </select>
+          {form.deliveryMode === "Entrega" && (
+            <>
+              <input placeholder="Endereço" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} />
+              <input placeholder="Bairro" value={form.district} onChange={(event) => setForm({ ...form, district: event.target.value })} />
+            </>
+          )}
+          <input placeholder="Cidade" value={form.city} onChange={(event) => setForm({ ...form, city: event.target.value })} />
+          <input placeholder="Referência/observação" value={form.reference} onChange={(event) => setForm({ ...form, reference: event.target.value })} />
+          <select value={form.payment} onChange={(event) => setForm({ ...form, payment: event.target.value })}>
+            <option>Pix</option>
+            <option>Dinheiro</option>
+            <option>Cartão</option>
+            <option>Fiado</option>
+          </select>
+          <button className="primary" disabled={!cart.length}>Enviar pedido</button>
+        </form>
+      </div>
+      {message && <p className="notice">{message}</p>}
+    </section>
+  );
+}
+
+function OnlineStoreLegacy() {
+  const [products, setProducts] = useState([]);
   const [message, setMessage] = useState("");
   useEffect(() => { api("/api/online/catalog").then(setProducts); }, []);
   async function order() {
