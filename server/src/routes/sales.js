@@ -11,9 +11,8 @@ const saleSchema = z.object({
   notes: z.string().optional().nullable(),
   items: z.array(z.object({
     productId: z.number(),
-    variantId: z.number().optional().nullable(),
+    variantId: z.number(),
     quantity: z.coerce.number().int().positive(),
-    unitPrice: z.coerce.number().positive(),
     discount: z.coerce.number().default(0)
   })).min(1),
   payments: z.array(z.object({
@@ -41,32 +40,41 @@ router.post("/", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ message: "Venda invalida.", issues: parsed.error.issues });
 
   const data = parsed.data;
-  const subtotal = data.items.reduce((sum, item) => sum + item.quantity * item.unitPrice - money(item.discount), 0);
-  const total = Math.max(subtotal - money(data.discount), 0);
-  const paid = data.payments.reduce((sum, item) => sum + money(item.amount), 0);
-  if (Math.abs(paid - total) > 0.01) return res.status(400).json({ message: "Pagamentos precisam fechar o total da venda." });
-
-  const products = await prisma.product.findMany({ where: { id: { in: data.items.map((item) => item.productId) } } });
-  const costMap = new Map(products.map((product) => [product.id, money(product.costPrice)]));
-  const profit = data.items.reduce((sum, item) => sum + (item.unitPrice - (costMap.get(item.productId) || 0)) * item.quantity, 0) - money(data.discount);
-
   const sale = await prisma.$transaction(async (tx) => {
+    const openCash = await tx.cashRegister.findFirst({ where: { status: "ABERTO" }, orderBy: { openedAt: "desc" } });
+    if (!openCash) throw new Error("Abra o caixa antes de finalizar vendas.");
+
+    const pricedItems = [];
     for (const item of data.items) {
-      if (item.variantId) {
-        const variant = await tx.productVariant.findUnique({ where: { id: item.variantId } });
-        if (!variant || variant.stock < item.quantity) throw new Error(`Estoque insuficiente para ${variant?.sku || "variacao"}.`);
-        await tx.productVariant.update({ where: { id: item.variantId }, data: { stock: { decrement: item.quantity } } });
-      }
+      const variant = await tx.productVariant.findUnique({
+        where: { id: item.variantId },
+        include: { product: true }
+      });
+      if (!variant || !variant.active || !variant.product.active) throw new Error("Variação de produto inválida ou inativa.");
+      if (variant.productId !== item.productId) throw new Error("Variação não pertence ao produto informado.");
+      if (variant.stock < item.quantity) throw new Error(`Estoque insuficiente para ${variant.sku}.`);
+
+      const unitPrice = money(variant.price || variant.product.promoPrice || variant.product.salePrice);
+      const lineTotal = item.quantity * unitPrice - money(item.discount);
+      pricedItems.push({ ...item, unitPrice, lineTotal, costPrice: money(variant.product.costPrice) });
+
+      await tx.productVariant.update({ where: { id: item.variantId }, data: { stock: { decrement: item.quantity } } });
       await tx.stockMovement.create({
         data: {
           productId: item.productId,
-          variantId: item.variantId || null,
+          variantId: item.variantId,
           type: "SAIDA",
           quantity: item.quantity,
           reason: "Venda PDV"
         }
       });
     }
+
+    const subtotal = pricedItems.reduce((sum, item) => sum + item.lineTotal, 0);
+    const total = Math.max(subtotal - money(data.discount), 0);
+    const paid = data.payments.reduce((sum, item) => sum + money(item.amount), 0);
+    if (Math.abs(paid - total) > 0.01) throw new Error("Pagamentos precisam fechar o total da venda.");
+    const profit = pricedItems.reduce((sum, item) => sum + (item.unitPrice - item.costPrice) * item.quantity, 0) - money(data.discount);
 
     const created = await tx.sale.create({
       data: {
@@ -79,13 +87,13 @@ router.post("/", async (req, res) => {
         profit,
         notes: data.notes,
         items: {
-          create: data.items.map((item) => ({
+          create: pricedItems.map((item) => ({
             productId: item.productId,
-            variantId: item.variantId || null,
+            variantId: item.variantId,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             discount: item.discount,
-            total: item.quantity * item.unitPrice - money(item.discount)
+            total: item.lineTotal
           }))
         },
         payments: { create: data.payments }
@@ -121,6 +129,18 @@ router.post("/", async (req, res) => {
               return { number: index + 1, dueDate, amount };
             })
           }
+        }
+      });
+    }
+
+    for (const payment of data.payments) {
+      await tx.cashMovement.create({
+        data: {
+          cashRegisterId: openCash.id,
+          type: "VENDA",
+          method: payment.method,
+          amount: payment.amount,
+          description: `Venda ${created.code}`
         }
       });
     }

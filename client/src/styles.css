@@ -427,6 +427,26 @@ th {
   width: auto;
 }
 
+.installments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.installments-list button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: var(--rose-soft);
+  color: var(--rose);
+}
+
+.installments-list button:disabled {
+  background: #eef8f0;
+  color: #2d8a54;
+  cursor: default;
+}
+
 .pdv-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
