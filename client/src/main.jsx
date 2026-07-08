@@ -367,7 +367,7 @@ function PDV() {
       setMessage("Venda finalizada, estoque baixado e pontos gerados.");
       setProducts(await api("/api/products"));
     } catch (err) {
-      setMessage(err.message);
+      setMessage(err.message.includes("Abra o caixa") ? `${err.message} Vá em Caixa e clique em Abrir caixa.` : err.message);
     }
   }
 

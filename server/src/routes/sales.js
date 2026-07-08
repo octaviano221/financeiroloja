@@ -36,6 +36,7 @@ router.get("/", async (_req, res) => {
 });
 
 router.post("/", async (req, res) => {
+  try {
   const parsed = saleSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ message: "Venda inválida.", issues: parsed.error.issues });
 
@@ -149,6 +150,10 @@ router.post("/", async (req, res) => {
   });
 
   res.status(201).json(sale);
+  } catch (error) {
+    console.error("Erro ao finalizar venda:", error);
+    res.status(400).json({ message: error.message || "Erro ao finalizar venda." });
+  }
 });
 
 router.post("/:id/cancel", async (req, res) => {

@@ -703,7 +703,7 @@ tbody tr:hover {
 
 .pdv-grid {
   display: grid;
-  grid-template-columns: 1fr 430px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
   gap: 18px;
   align-items: start;
 }
@@ -795,6 +795,7 @@ tbody tr:hover {
   gap: 14px;
   padding: 18px;
   animation: cardIn 340ms ease both;
+  min-width: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -815,7 +816,7 @@ tbody tr:hover {
 
 .cart-line {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) 104px 74px 82px 34px;
+  grid-template-columns: minmax(0, 1fr) 94px 64px 78px 32px;
   gap: 8px;
   align-items: center;
   padding: 10px;
@@ -827,6 +828,12 @@ tbody tr:hover {
 .cart-line span {
   display: grid;
   gap: 2px;
+  min-width: 0;
+}
+
+.cart-line span,
+.cart-line strong {
+  overflow-wrap: anywhere;
 }
 
 .cart-line small {
@@ -839,7 +846,7 @@ tbody tr:hover {
 
 .qty-stepper {
   display: grid;
-  grid-template-columns: 28px 1fr 28px;
+  grid-template-columns: 26px 1fr 26px;
   gap: 4px;
   align-items: center;
 }
@@ -853,6 +860,12 @@ tbody tr:hover {
   min-height: 34px;
   background: white;
   color: var(--rose);
+}
+
+.qty-stepper input,
+.discount-input {
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .qty-stepper input,
