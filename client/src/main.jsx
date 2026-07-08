@@ -122,12 +122,20 @@ function Shell({ user, onLogout }) {
         <header className="topbar">
           <button className="ghost mobile-only" onClick={() => setOpen(true)}><Menu /></button>
           <GlobalSearch onNavigate={setPage} />
-          <Bell size={20} />
-          <div className="user-pill">
-            <span>{user?.name || "Loja"}</span>
-            <small>{user?.role || "ADMIN"}</small>
+          <div className="topbar-actions">
+            <button className="notification-button" type="button" title="Notificações">
+              <Bell size={19} />
+              <span>3</span>
+            </button>
+            <div className="user-pill">
+              <span className="store-avatar"><ShoppingBag size={18} /></span>
+              <div>
+                <strong>Sud Daiana Modas</strong>
+                <small>{roleLabel(user?.role || "ADMIN")}</small>
+              </div>
+            </div>
+            <button className="ghost logout-button" onClick={onLogout} title="Sair"><LogOut size={18} /></button>
           </div>
-          <button className="ghost" onClick={onLogout} title="Sair"><LogOut size={18} /></button>
         </header>
         <Page page={page} />
       </main>
