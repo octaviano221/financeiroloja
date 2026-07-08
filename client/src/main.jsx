@@ -303,10 +303,15 @@ function DashboardPremium() {
 
   const cards = data?.cards || {};
   const chartMax = Math.max(...(data?.chart || []).map((point) => Number(point.total || 0)), 1);
+  const chartTop = Math.max(Math.ceil(chartMax / 100) * 100, 100);
+  const chartScale = [chartTop, chartTop * 0.75, chartTop * 0.5, chartTop * 0.25, 0];
+  const todaySalesCount = cards.todaySalesCount ?? cards.salesCount ?? 0;
+  const monthSalesCount = cards.monthSalesCount ?? todaySalesCount;
+  const saleText = (count, suffix) => `${count} ${count === 1 ? "venda" : "vendas"} ${suffix}`;
   const mainCards = [
-    ["Vendas do Dia", money(cards.todaySales), "0 vendas realizadas", BadgeDollarSign, "rose", "line"],
-    ["Vendas do Mês", money(cards.monthSales), "0 vendas realizadas", BarChart3, "rose", "bars"],
-    ["Quantidade de Vendas", cards.salesCount || 0, "0% em relação ao mês anterior", ShoppingBag, "purple", "line"],
+    ["Vendas do Dia", money(cards.todaySales), saleText(todaySalesCount, "hoje"), BadgeDollarSign, "rose", "line"],
+    ["Vendas do Mês", money(cards.monthSales), saleText(monthSalesCount, "no mês"), BarChart3, "rose", "bars"],
+    ["Quantidade de Vendas", todaySalesCount, saleText(monthSalesCount, "no mês"), ShoppingBag, "purple", "line"],
     ["Lucro Estimado", money(cards.estimatedProfit), "0% em relação ao mês anterior", WalletCards, "green", "line"]
   ];
   const miniCards = [
@@ -361,9 +366,12 @@ function DashboardPremium() {
         <section className="panel wide">
           <div className="panel-head"><h3>Gráfico de Vendas</h3><button>Este mês</button></div>
           <div className="sales-chart">
-            <div className="chart-scale"><span>R$ 1.000</span><span>R$ 750</span><span>R$ 500</span><span>R$ 250</span><span>R$ 0</span></div>
+            <div className="chart-scale">{chartScale.map((value) => <span key={value}>{money(value)}</span>)}</div>
             <div className="chart-area">
-              {(data?.chart || []).map((point) => <i key={point.label} style={{ height: `${Math.max((Number(point.total || 0) / chartMax) * 160, 18)}px` }} title={`${point.label}: ${money(point.total)}`} />)}
+              {(data?.chart || []).map((point) => {
+                const total = Number(point.total || 0);
+                return <i key={point.label} className={total > 0 ? "" : "empty"} style={{ height: `${total > 0 ? Math.max((total / chartTop) * 180, 18) : 2}px` }} title={`Dia ${point.label}: ${money(total)}`} />;
+              })}
             </div>
           </div>
         </section>
@@ -1240,8 +1248,8 @@ function DataTable({ rows, columns, actions }) {
   function value(row, key) {
     const val = key.split(".").reduce((acc, part) => acc?.[part], row);
     if (key.toLowerCase().includes("price") || ["total", "fee", "discountValue", "openingAmount", "closingAmount"].includes(key)) return money(val);
-    if ((key.toLowerCase().includes("at") || key === "openedAt") && val) return new Date(val).toLocaleDateString("pt-BR");
     if (key === "status") return <StatusBadge value={val} />;
+    if ((/(At|Date)$/i.test(key) || key === "openedAt") && val) return new Date(val).toLocaleDateString("pt-BR");
     if (typeof val === "boolean") return <StatusBadge value={val ? "SIM" : "NÃO"} />;
     if (typeof val === "string" && /^[A-Z_]+$/.test(val)) return formatText(val);
     if (val && typeof val === "object") return JSON.stringify(val);

@@ -8,11 +8,14 @@ router.get("/", async (_req, res) => {
   const now = new Date();
   const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
   const [
     todaySales,
     monthSales,
-    salesCount,
+    todaySalesCount,
+    monthSalesCount,
+    monthSalesList,
     openCredit,
     pendingDelivery,
     activeCustomers,
@@ -24,6 +27,12 @@ router.get("/", async (_req, res) => {
     prisma.sale.aggregate({ where: { createdAt: { gte: startDay }, status: "FINALIZADA" }, _sum: { total: true, profit: true } }),
     prisma.sale.aggregate({ where: { createdAt: { gte: startMonth }, status: "FINALIZADA" }, _sum: { total: true, profit: true } }),
     prisma.sale.count({ where: { createdAt: { gte: startDay }, status: "FINALIZADA" } }),
+    prisma.sale.count({ where: { createdAt: { gte: startMonth }, status: "FINALIZADA" } }),
+    prisma.sale.findMany({
+      where: { createdAt: { gte: startMonth, lt: nextMonth }, status: "FINALIZADA" },
+      select: { createdAt: true, total: true },
+      orderBy: { createdAt: "asc" }
+    }),
     prisma.creditInstallment.aggregate({ where: { status: { in: ["PENDENTE", "VENCIDA"] }, }, _sum: { amount: true, paidAmount: true } }),
     prisma.deliveryOrder.count({ where: { status: { notIn: ["ENTREGUE", "CANCELADO"] } } }),
     prisma.customer.count({ where: { loyaltyPoints: { gt: 0 } } }),
@@ -44,12 +53,20 @@ router.get("/", async (_req, res) => {
   ]);
 
   const creditOpen = money(openCredit._sum.amount) - money(openCredit._sum.paidAmount);
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const dailyTotals = new Map();
+  for (const sale of monthSalesList) {
+    const label = String(new Date(sale.createdAt).getDate()).padStart(2, "0");
+    dailyTotals.set(label, money(dailyTotals.get(label) || 0) + money(sale.total));
+  }
 
   res.json({
     cards: {
       todaySales: money(todaySales._sum.total),
       monthSales: money(monthSales._sum.total),
-      salesCount,
+      salesCount: todaySalesCount,
+      todaySalesCount,
+      monthSalesCount,
       estimatedProfit: money(monthSales._sum.profit),
       openCredit: creditOpen,
       pendingDelivery,
@@ -68,10 +85,13 @@ router.get("/", async (_req, res) => {
       })),
       pendingDelivery
     },
-    chart: Array.from({ length: 12 }).map((_, index) => ({
-      label: `${index + 1}`,
-      total: Math.round(800 + Math.random() * 4200)
-    })),
+    chart: Array.from({ length: daysInMonth }).map((_, index) => {
+      const label = String(index + 1).padStart(2, "0");
+      return {
+        label,
+        total: money(dailyTotals.get(label) || 0)
+      };
+    }),
     recentSales
   });
 });

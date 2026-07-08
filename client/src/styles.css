@@ -779,6 +779,14 @@ nav button.active {
   animation: barRise 620ms cubic-bezier(.2,.8,.2,1) both;
 }
 
+.chart-area i.empty {
+  min-width: 8px;
+  max-width: 18px;
+  background: rgba(234,223,229,0.75);
+  box-shadow: none;
+  animation: none;
+}
+
 .alert-list {
   display: grid;
   gap: 12px;
