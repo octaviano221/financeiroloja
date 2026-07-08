@@ -129,7 +129,7 @@ function Shell({ user, onLogout }) {
               <span>3</span>
             </button>
             <div className="user-pill">
-              <span className="store-avatar"><ShoppingBag size={18} /></span>
+              <span className="store-avatar">SD</span>
               <div>
                 <strong>Sud Daiana Modas</strong>
                 <small>{roleLabel(user?.role || "ADMIN")}</small>
@@ -476,12 +476,12 @@ function PDV() {
   const cartItemsCount = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
   const totalStock = products.reduce((sum, product) => sum + (product.variants || []).reduce((acc, variant) => acc + Number(variant.stock || 0), 0), 0);
   const paymentOptions = [
-    ["PIX", "Pix"],
-    ["DINHEIRO", "Dinheiro"],
-    ["DEBITO", "Débito"],
-    ["CREDITO", "Crédito"],
-    ["CREDIARIO", "Fiado"],
-    ["VALE_TROCA", "Vale"]
+    ["PIX", "Pix", BadgeDollarSign],
+    ["DINHEIRO", "Dinheiro", WalletCards],
+    ["DEBITO", "Débito", CreditCard],
+    ["CREDITO", "Crédito", CreditCard],
+    ["CREDIARIO", "Fiado", FileText],
+    ["VALE_TROCA", "Vale", Receipt]
   ];
   const filteredProducts = products.filter((product) => {
     const term = productSearch.trim().toLowerCase();
@@ -598,9 +598,9 @@ function PDV() {
         <div className="pdv-hero">
           <div className="page-title"><h2>PDV / Frente de Caixa</h2><p>Venda rápida com leitor, cliente, pagamento e cupom.</p></div>
           <div className="pdv-kpis">
-            <span><strong>{cartItemsCount}</strong> itens</span>
-            <span><strong>{money(total)}</strong> total</span>
-            <span><strong>{totalStock}</strong> un. estoque</span>
+            <span><ShoppingBag size={19} /><strong>{cartItemsCount}</strong><small>itens</small></span>
+            <span><BadgeDollarSign size={19} /><strong>{money(total)}</strong><small>total</small></span>
+            <span><Boxes size={19} /><strong>{totalStock}</strong><small>un. estoque</small></span>
           </div>
         </div>
         <form className="barcode-panel" onSubmit={scanBarcode}>
@@ -611,7 +611,7 @@ function PDV() {
               <input value={barcodeQuery} onChange={(event) => setBarcodeQuery(event.target.value)} placeholder="Passe o leitor ou digite o código e pressione Enter" autoComplete="off" />
             </label>
           </div>
-          <button className="primary" type="submit">Adicionar</button>
+          <button className="primary" type="submit"><Plus size={18} /> Adicionar</button>
         </form>
         <div className="pdv-tools">
           <div className="search inline">
@@ -672,13 +672,23 @@ function PDV() {
               <button className="icon-action" type="button" title="Remover item" onClick={() => remove(index)}><Trash2 size={16} /></button>
             </div>
           ))}
-          {!cart.length && <p className="empty-cart"><Plus size={18} /> Adicione produtos pelo catálogo para começar a venda.</p>}
+          {!cart.length && (
+            <div className="empty-cart">
+              <div className="empty-cart-art">
+                <ShoppingBag size={42} />
+                <span>%</span>
+              </div>
+              <strong>Adicione produtos pelo catálogo</strong>
+              <small>ou passe o leitor de código de barras para começar a venda.</small>
+            </div>
+          )}
         </div>
         <div className="payment-panel">
           <span>Forma de pagamento</span>
           <div className="payment-options">
-            {paymentOptions.map(([value, label]) => (
+            {paymentOptions.map(([value, label, Icon]) => (
               <button className={payment === value ? "active" : ""} key={value} type="button" onClick={() => setPayment(value)}>
+                <Icon size={16} />
                 {label}
               </button>
             ))}
@@ -702,8 +712,11 @@ function PDV() {
           </div>
         )}
         <div className="flow-hint">
-          <strong>Fluxo automático</strong>
-          <span>Finalizou a venda? O sistema baixa estoque, movimenta o caixa, soma fidelidade e alimenta dashboard/relatórios.</span>
+          <div>
+            <strong>Fluxo automático</strong>
+            <span>Finalizou a venda? O sistema baixa estoque, movimenta o caixa, soma fidelidade e alimenta dashboard/relatórios.</span>
+          </div>
+          <i aria-hidden="true" />
         </div>
         <div className="summary-lines">
           <span>Subtotal <strong>{money(subtotal)}</strong></span>
@@ -711,7 +724,7 @@ function PDV() {
           {payment === "DINHEIRO" && <span>Troco <strong>{money(change)}</strong></span>}
         </div>
         <div className="total"><span>Total</span><strong>{money(total)}</strong></div>
-        <button className="primary" disabled={!cart.length} onClick={finish}>Finalizar venda</button>
+        <button className="primary" disabled={!cart.length} onClick={finish}><ShoppingBag size={18} /> Finalizar venda</button>
         {lastSale && <ReceiptCard sale={lastSale} />}
         {message && <p className="notice">{message}</p>}
       </aside>
