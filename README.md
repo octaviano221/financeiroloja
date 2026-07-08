@@ -94,7 +94,12 @@ CREATE DATABASE IF NOT EXISTS sud_daiana_modas
   COLLATE utf8mb4_unicode_ci;
 ```
 
-Depois use o arquivo `server/prisma/migrations/20260708000000_init/migration.sql` para criar todas as tabelas.
+Depois importe os arquivos nesta ordem:
+
+1. `server/prisma/hostinger-import.sql` para criar todas as tabelas;
+2. `server/prisma/hostinger-seed.sql` para criar o usuario admin e dados iniciais.
+
+Evite colar no campo SQL copiando do terminal, porque alguns navegadores trocam os comentarios `--` e o phpMyAdmin pode acusar erro de sintaxe.
 
 ## Modulos incluidos
 
