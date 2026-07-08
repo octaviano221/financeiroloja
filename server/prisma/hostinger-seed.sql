@@ -1,5 +1,5 @@
 INSERT IGNORE INTO `User` (`id`, `name`, `email`, `password`, `role`, `active`, `createdAt`, `updatedAt`) VALUES
-(1, 'Loja da Vo', 'admin@suddaiana.com', '$2a$10$dj9ru4L6aWaZYVYqE1ojBOn4Uj7hPWSqMoP/9p31naU3uxQARvAJ.', 'ADMIN', true, NOW(3), NOW(3));
+(1, 'Loja da Vo', 'admin@suddaiana.com', '$2a$10$AIRQUqypvo.vSvuEQN4Sn.jIWIk2zV2Lx.uNyYKsFwxpJNih34IB.', 'ADMIN', true, NOW(3), NOW(3));
 
 INSERT IGNORE INTO `Category` (`id`, `name`, `active`, `createdAt`) VALUES
 (1, 'Vestidos', true, NOW(3)),
