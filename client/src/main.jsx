@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BadgeDollarSign,
@@ -39,16 +39,16 @@ const nav = [
   { id: "products", label: "Produtos", icon: Package },
   { id: "stock", label: "Estoque", icon: Boxes },
   { id: "customers", label: "Clientes", icon: Users },
-  { id: "credit", label: "Crediário", icon: CreditCard },
+  { id: "credit", label: "CrediÃ¡rio", icon: CreditCard },
   { id: "delivery", label: "Delivery", icon: Truck },
-  { id: "promos", label: "Promoções", icon: Gift },
+  { id: "promos", label: "PromoÃ§Ãµes", icon: Gift },
   { id: "loyalty", label: "Fidelidade", icon: Heart },
   { id: "cash", label: "Caixa", icon: WalletCards },
   { id: "fiscal", label: "Nota Fiscal", icon: Receipt },
-  { id: "reports", label: "Relatórios", icon: BarChart3 },
-  { id: "users", label: "Usuários", icon: UserCog },
+  { id: "reports", label: "RelatÃ³rios", icon: BarChart3 },
+  { id: "users", label: "UsuÃ¡rios", icon: UserCog },
   { id: "online", label: "Pedido Online", icon: CalendarHeart },
-  { id: "settings", label: "Configurações", icon: Settings }
+  { id: "settings", label: "ConfiguraÃ§Ãµes", icon: Settings }
 ];
 
 function Login({ onLogin }) {
@@ -73,7 +73,7 @@ function Login({ onLogin }) {
       <section className="login-card">
         <div className="brand-mark">SD</div>
         <h1>Sud Daiana Modas</h1>
-        <p>Sistema de gestão para vender, controlar estoque e cuidar dos clientes com carinho.</p>
+        <p>Sistema de gestÃ£o para vender, controlar estoque e cuidar dos clientes com carinho.</p>
         <form onSubmit={submit} className="form-stack">
           <label>
             Email
@@ -117,7 +117,7 @@ function Shell({ user, onLogout }) {
             );
           })}
         </nav>
-        <div className="made">Feito com amor para vestir histórias.</div>
+        <div className="made">Feito com amor para vestir histÃ³rias.</div>
       </aside>
 
       <main className="content">
@@ -125,7 +125,7 @@ function Shell({ user, onLogout }) {
           <button className="ghost mobile-only" onClick={() => setOpen(true)}><Menu /></button>
           <GlobalSearch onNavigate={setPage} />
           <div className="topbar-actions">
-            <button className="notification-button" type="button" title="Notificações">
+            <button className="notification-button" type="button" title="NotificaÃ§Ãµes">
               <Bell size={19} />
               <span>3</span>
             </button>
@@ -172,9 +172,9 @@ function GlobalSearch({ onNavigate }) {
         });
 
         setResults([
-          ...(products || []).slice(0, 4).map((item) => ({ type: "Produto", title: item.name, detail: `${item.sku} • ${money(item.salePrice)}`, page: "products" })),
+          ...(products || []).slice(0, 4).map((item) => ({ type: "Produto", title: item.name, detail: `${item.sku} â€¢ ${money(item.salePrice)}`, page: "products" })),
           ...(customers || []).slice(0, 4).map((item) => ({ type: "Cliente", title: item.name, detail: item.phone || "Sem telefone", page: "customers" })),
-          ...saleMatches.slice(0, 4).map((item) => ({ type: "Venda", title: item.code, detail: `${item.customer?.name || "Cliente não cadastrado"} • ${money(item.total)}`, page: "reports" }))
+          ...saleMatches.slice(0, 4).map((item) => ({ type: "Venda", title: item.code, detail: `${item.customer?.name || "Cliente nÃ£o cadastrado"} â€¢ ${money(item.total)}`, page: "reports" }))
         ]);
         setOpen(true);
       } catch {
@@ -223,12 +223,12 @@ function Page({ page }) {
     dashboard: <DashboardPremium />,
     pdv: <PDV />,
     products: <Products />,
-    stock: <SimpleModule title="Estoque" endpoint="/api/products" description="Movimentações, inventário, filtros por cor/tamanho e alertas de estoque baixo." columns={["name", "sku", "category.name", "salePrice", "active"]} />,
+    stock: <SimpleModule title="Estoque" endpoint="/api/products" description="MovimentaÃ§Ãµes, inventÃ¡rio, filtros por cor/tamanho e alertas de estoque baixo." columns={["name", "sku", "category.name", "salePrice", "active"]} />,
     customers: <Customers />,
     credit: <CreditPage />,
-    delivery: <SimpleModule title="Delivery" endpoint="/api/delivery" description="Pedidos do WhatsApp, retirada na loja, entrega própria e status de separação." columns={["customerName", "phone", "district", "city", "status", "payment", "fee", "createdAt"]} />,
-    promos: <SimpleModule title="Promoções" endpoint="/api/promotions" description="Cupons, descontos por produto/categoria e campanhas por período." columns={["name", "type", "target", "discountValue", "active", "startsAt", "endsAt"]} />,
-    loyalty: <SimpleModule title="Fidelidade" endpoint="/api/customers" description="Pontos, níveis Bronze/Prata/Ouro/VIP e campanhas para clientes inativos." columns={["name", "phone", "loyaltyPoints", "createdAt"]} />,
+    delivery: <SimpleModule title="Delivery" endpoint="/api/delivery" description="Pedidos do WhatsApp, retirada na loja, entrega prÃ³pria e status de separaÃ§Ã£o." columns={["customerName", "phone", "district", "city", "status", "payment", "fee", "createdAt"]} />,
+    promos: <SimpleModule title="PromoÃ§Ãµes" endpoint="/api/promotions" description="Cupons, descontos por produto/categoria e campanhas por perÃ­odo." columns={["name", "type", "target", "discountValue", "active", "startsAt", "endsAt"]} />,
+    loyalty: <SimpleModule title="Fidelidade" endpoint="/api/customers" description="Pontos, nÃ­veis Bronze/Prata/Ouro/VIP e campanhas para clientes inativos." columns={["name", "phone", "loyaltyPoints", "createdAt"]} />,
     cash: <CashPage />,
     fiscal: <SimpleModule title="Nota Fiscal" endpoint="/api/invoices" description="Estrutura pronta para NFC-e/NF-e, XML, DANFE e provedor fiscal homologado." columns={["type", "status", "number", "provider", "createdAt"]} />,
     reports: <Reports />,
@@ -245,21 +245,21 @@ function Dashboard() {
   const cards = data?.cards || {};
   const cardList = [
     ["Vendas do Dia", money(cards.todaySales), BadgeDollarSign],
-    ["Vendas do Mês", money(cards.monthSales), BarChart3],
+    ["Vendas do MÃªs", money(cards.monthSales), BarChart3],
     ["Quantidade de Vendas", cards.salesCount || 0, ShoppingBag],
     ["Lucro Estimado", money(cards.estimatedProfit), WalletCards],
-    ["Crediário em Aberto", money(cards.openCredit), CreditCard],
+    ["CrediÃ¡rio em Aberto", money(cards.openCredit), CreditCard],
     ["Delivery Pendente", cards.pendingDelivery || 0, Truck],
     ["Estoque Baixo", cards.lowStock || 0, Boxes],
     ["Clientes Fidelidade", cards.loyaltyCustomers || 0, Heart],
-    ["Promoções Ativas", cards.activePromos || 0, Gift]
+    ["PromoÃ§Ãµes Ativas", cards.activePromos || 0, Gift]
   ];
 
   return (
     <section className="page">
       <div className="page-title">
         <h2>Dashboard</h2>
-        <p>Visão geral da loja hoje.</p>
+        <p>VisÃ£o geral da loja hoje.</p>
       </div>
       <div className="metric-grid">
         {cardList.map(([label, value, Icon]) => (
@@ -272,7 +272,7 @@ function Dashboard() {
       </div>
       <div className="dashboard-grid">
         <section className="panel wide">
-          <div className="panel-head"><h3>Gráfico de Vendas</h3><button>Este mês</button></div>
+          <div className="panel-head"><h3>GrÃ¡fico de Vendas</h3><button>Este mÃªs</button></div>
           <div className="chart">
             {(data?.chart || []).map((point) => <i key={point.label} style={{ height: `${Math.max(point.total / 55, 18)}px` }} title={`${point.label}: ${money(point.total)}`} />)}
           </div>
@@ -315,23 +315,23 @@ function DashboardPremium() {
   const mainProgressMax = Math.max(Number(cards.monthSales || 0), Number(cards.estimatedProfit || 0), monthSalesCount, 1);
   const mainCards = [
     ["Vendas do Dia", money(cards.todaySales), saleText(todaySalesCount, "hoje"), BadgeDollarSign, "rose", Number(cards.todaySales || 0)],
-    ["Vendas do Mês", money(cards.monthSales), saleText(monthSalesCount, "no mês"), BarChart3, "rose", Number(cards.monthSales || 0)],
-    ["Quantidade de Vendas", todaySalesCount, saleText(monthSalesCount, "no mês"), ShoppingBag, "purple", monthSalesCount],
-    ["Lucro Estimado", money(cards.estimatedProfit), "dados reais do mês", WalletCards, "green", Number(cards.estimatedProfit || 0)]
+    ["Vendas do MÃªs", money(cards.monthSales), saleText(monthSalesCount, "no mÃªs"), BarChart3, "rose", Number(cards.monthSales || 0)],
+    ["Quantidade de Vendas", todaySalesCount, saleText(monthSalesCount, "no mÃªs"), ShoppingBag, "purple", monthSalesCount],
+    ["Lucro Estimado", money(cards.estimatedProfit), "dados reais do mÃªs", WalletCards, "green", Number(cards.estimatedProfit || 0)]
   ];
   const miniCards = [
-    ["Crediário em Aberto", money(cards.openCredit), "clientes", CreditCard, "rose"],
+    ["CrediÃ¡rio em Aberto", money(cards.openCredit), "clientes", CreditCard, "rose"],
     ["Delivery Pendente", cards.pendingDelivery || 0, "entregas", Truck, "orange"],
     ["Estoque Baixo", cards.lowStock || 0, "produtos", Boxes, "amber"],
     ["Clientes Fidelidade", cards.loyaltyCustomers || 0, "cliente", Heart, "purple"],
-    ["Promoções Ativas", cards.activePromos || 0, "promoções", Gift, "rose"]
+    ["PromoÃ§Ãµes Ativas", cards.activePromos || 0, "promoÃ§Ãµes", Gift, "rose"]
   ];
 
   return (
     <section className="page dashboard-page">
       <div className="dashboard-hero">
         <div>
-          <h2>Olá, Admin!</h2>
+          <h2>OlÃ¡, Admin!</h2>
           <p>Veja o desempenho da sua loja hoje.</p>
         </div>
         <div className="dashboard-actions">
@@ -372,7 +372,7 @@ function DashboardPremium() {
 
       <div className="dashboard-grid premium">
         <section className="panel wide">
-          <div className="panel-head"><h3>Gráfico de Vendas</h3><button>Este mês</button></div>
+          <div className="panel-head"><h3>GrÃ¡fico de Vendas</h3><button>Este mÃªs</button></div>
           <div className="sales-chart">
             <div className="chart-scale">{chartScale.map((value) => <span key={value}>{money(value)}</span>)}</div>
             <div className={`chart-area ${chartData.length <= 6 ? "compact" : ""}`}>
@@ -392,7 +392,7 @@ function DashboardPremium() {
         <section className="panel alert-panel">
           <div className="panel-head"><h3>Alertas importantes</h3></div>
           <ul className="alert-list">
-            <li className="success"><span>{data?.alerts?.overdueCredit || 0} parcelas vencidas<small>Situação em dia</small></span><em className="alert-pill ok">Ok</em></li>
+            <li className="success"><span>{data?.alerts?.overdueCredit || 0} parcelas vencidas<small>SituaÃ§Ã£o em dia</small></span><em className="alert-pill ok">Ok</em></li>
             <li className="warning"><span>{data?.alerts?.pendingDelivery || 0} entregas aguardando<small>Acompanhe as entregas</small></span><em className="alert-pill pending">Pendente</em></li>
             {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li className="warning" key={item.id}><span>{item.name} {item.size} com {item.stock} un.<small>Estoque baixo</small></span><em className="alert-pill low">Baixo</em></li>)}
           </ul>
@@ -403,7 +403,7 @@ function DashboardPremium() {
           {(data?.recentSales || []).length ? (
             <DataTable rows={data?.recentSales || []} columns={["code", "customer.name", "total", "createdAt", "status"]} />
           ) : (
-            <EmptyState title="Nenhum registro encontrado." text="As vendas realizadas aparecerão aqui." action="Ir para o PDV" />
+            <EmptyState title="Nenhum registro encontrado." text="As vendas realizadas aparecerÃ£o aqui." action="Ir para o PDV" />
           )}
         </section>
       </div>
@@ -479,16 +479,16 @@ function PDV() {
   const paymentOptions = [
     ["PIX", "Pix", BadgeDollarSign],
     ["DINHEIRO", "Dinheiro", WalletCards],
-    ["DEBITO", "Débito", CreditCard],
-    ["CREDITO", "Crédito", CreditCard],
+    ["DEBITO", "DÃ©bito", CreditCard],
+    ["CREDITO", "CrÃ©dito", CreditCard],
     ["CREDIARIO", "Fiado", FileText],
     ["VALE_TROCA", "Vale", Receipt]
   ];
   const quickCategories = [
     ["Blusas", "Blusas", Package],
-    ["Calças", "Calças", Boxes],
+    ["CalÃ§as", "CalÃ§as", Boxes],
     ["Vestidos", "Vestidos", Heart],
-    ["Promoções", "Promo", Gift],
+    ["PromoÃ§Ãµes", "Promo", Gift],
     ["Mais vendidos", "", Star]
   ];
   const filteredProducts = products.filter((product) => {
@@ -503,7 +503,7 @@ function PDV() {
       ? product.variants?.find((item) => String(item.id) === String(variantId))
       : product.variants?.find((item) => item.stock > 0);
     if (!variant) {
-      setMessage("Produto sem variação com estoque disponível.");
+      setMessage("Produto sem variaÃ§Ã£o com estoque disponÃ­vel.");
       return;
     }
     const unitPrice = Number(variant.price || product.promoPrice || product.salePrice);
@@ -556,7 +556,7 @@ function PDV() {
       }
     }
     setProductSearch(barcodeQuery);
-    setMessage("Código não encontrado. Mostrei resultados próximos no catálogo.");
+    setMessage("CÃ³digo nÃ£o encontrado. Mostrei resultados prÃ³ximos no catÃ¡logo.");
   }
 
   async function finish() {
@@ -566,7 +566,7 @@ function PDV() {
       return;
     }
     if (payment === "CREDIARIO" && !customerId) {
-      setMessage("Crediário exige cliente cadastrado. Selecione um cliente antes de finalizar.");
+      setMessage("CrediÃ¡rio exige cliente cadastrado. Selecione um cliente antes de finalizar.");
       return;
     }
     try {
@@ -596,7 +596,7 @@ function PDV() {
       setMessage(`Venda ${sale.code} finalizada: estoque baixado, caixa atualizado e dashboard pronto para atualizar.`);
       setProducts(await api("/api/products"));
     } catch (err) {
-      setMessage(err.message.includes("Abra o caixa") ? `${err.message} Vá em Caixa e clique em Abrir caixa.` : err.message);
+      setMessage(err.message.includes("Abra o caixa") ? `${err.message} VÃ¡ em Caixa e clique em Abrir caixa.` : err.message);
     }
   }
 
@@ -620,8 +620,8 @@ function PDV() {
           <div>
             <Barcode size={24} />
             <label>
-              Ler código de barras ou SKU
-              <input value={barcodeQuery} onChange={(event) => setBarcodeQuery(event.target.value)} placeholder="Passe o leitor ou digite o código e pressione Enter" autoComplete="off" />
+              Ler cÃ³digo de barras ou SKU
+              <input value={barcodeQuery} onChange={(event) => setBarcodeQuery(event.target.value)} placeholder="Passe o leitor ou digite o cÃ³digo e pressione Enter" autoComplete="off" />
             </label>
           </div>
           <button className="primary scanner-add" type="submit"><Plus size={17} /> Adicionar</button>
@@ -629,7 +629,7 @@ function PDV() {
         <div className="pdv-command-row">
           <button type="button" onClick={() => document.querySelector(".pdv-tools input")?.focus()}><Search size={20} /><span>Buscar produto<small>F2</small></span></button>
           <button type="button" onClick={() => setProductSearch("")}><Package size={20} /><span>Produto sem código<small>Catálogo</small></span></button>
-          <button type="button" onClick={() => setProductSearch("")}><Gift size={20} /><span>Venda rÃ¡pida<small>Atalho</small></span></button>
+          <button type="button" onClick={() => setProductSearch("")}><Gift size={20} /><span>Venda rápida<small>Atalho</small></span></button>
           <button type="button" onClick={() => remove(cart.length - 1)} disabled={!cart.length}><X size={20} /><span>Cancelar item<small>Esc</small></span></button>
         </div>
         <div className="pdv-category-row">
@@ -679,14 +679,14 @@ function PDV() {
               </div>
             )}
           </div>
-          <button className="sale-note" type="button"><Plus size={15} /> Adicionar observação ou informação da venda</button>
+          <button className="sale-note" type="button"><Plus size={15} /> Adicionar observaÃ§Ã£o ou informaÃ§Ã£o da venda</button>
         </section>
         <div className="pdv-tools">
           <div className="search inline">
             <Search size={18} />
-            <input value={productSearch} onChange={(event) => setProductSearch(event.target.value)} placeholder="Buscar no catálogo do PDV..." />
+            <input value={productSearch} onChange={(event) => setProductSearch(event.target.value)} placeholder="Buscar no catÃ¡logo do PDV..." />
           </div>
-          <span>{filteredProducts.length} produtos disponíveis</span>
+          <span>{filteredProducts.length} produtos disponÃ­veis</span>
         </div>
         <div className="product-grid">
           {filteredProducts.map((product) => (
@@ -702,7 +702,7 @@ function PDV() {
               <div className="variant-pills">
                 {(product.variants || []).filter((item) => item.stock > 0).slice(0, 4).map((variant) => (
                   <button key={variant.id} onClick={() => add(product, variant.id)}>
-                    {variant.size} {variant.color} · {variant.stock}
+                    {variant.size} {variant.color} Â· {variant.stock}
                   </button>
                 ))}
               </div>
@@ -712,9 +712,9 @@ function PDV() {
         <div className="pdv-footer">
           <span>Mostrando 1 a {filteredProducts.length} de {filteredProducts.length} produtos</span>
           <div>
-            <button type="button">‹</button>
+            <button type="button">â€¹</button>
             <strong>1</strong>
-            <button type="button">›</button>
+            <button type="button">â€º</button>
           </div>
         </div>
       </div>
@@ -722,7 +722,7 @@ function PDV() {
         <h3><ShoppingBag size={18} /> Fechamento da venda</h3>
         <label>Cliente
           <select value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
-            <option value="">Cliente não cadastrado</option>
+            <option value="">Cliente nÃ£o cadastrado</option>
             {customers.map((customer) => <option value={customer.id} key={customer.id}>{customer.name}</option>)}
           </select>
         </label>
@@ -746,8 +746,8 @@ function PDV() {
                 <ShoppingBag size={42} />
                 <span>%</span>
               </div>
-              <strong>Adicione produtos pelo catálogo</strong>
-              <small>ou passe o leitor de código de barras para começar a venda.</small>
+              <strong>Adicione produtos pelo catÃ¡logo</strong>
+              <small>ou passe o leitor de cÃ³digo de barras para comeÃ§ar a venda.</small>
             </div>
           )}
         </div>
@@ -769,7 +769,7 @@ function PDV() {
         )}
         {payment === "CREDIARIO" && (
           <div className="credit-box">
-            <strong>Crediário da venda</strong>
+            <strong>CrediÃ¡rio da venda</strong>
             <small>Selecione um cliente para gerar as parcelas automaticamente.</small>
             <label>Parcelas
               <input type="number" min="1" max="12" value={creditInstallments} onChange={(event) => setCreditInstallments(event.target.value)} />
@@ -781,8 +781,8 @@ function PDV() {
         )}
         <div className="flow-hint">
           <div>
-            <strong>Fluxo automático</strong>
-            <span>Finalizou a venda? O sistema baixa estoque, movimenta o caixa, soma fidelidade e alimenta dashboard/relatórios.</span>
+            <strong>Fluxo automÃ¡tico</strong>
+            <span>Finalizou a venda? O sistema baixa estoque, movimenta o caixa, soma fidelidade e alimenta dashboard/relatÃ³rios.</span>
           </div>
           <i aria-hidden="true" />
         </div>
@@ -812,10 +812,10 @@ function ReceiptCard({ sale }) {
     `).join("");
     const payments = (sale.payments || []).map((payment) => `${formatText(payment.method)} ${money(payment.amount)}`).join("<br>");
     const isCreditSale = sale.saleMode === "FIADO" || (sale.payments || []).some((payment) => payment.method === "CREDIARIO");
-    const modeLabel = isCreditSale ? "FIADO / CREDIÁRIO" : "À VISTA";
+    const modeLabel = isCreditSale ? "FIADO / CREDIÃRIO" : "Ã€ VISTA";
     const firstDue = sale.creditFirstDueDate ? new Date(`${sale.creditFirstDueDate}T00:00:00`).toLocaleDateString("pt-BR") : "";
     const creditRows = isCreditSale ? `
-      <p><strong>Condição:</strong> ${sale.creditInstallments || 1} parcela(s)${firstDue ? ` • 1º vencimento: ${firstDue}` : ""}</p>
+      <p><strong>CondiÃ§Ã£o:</strong> ${sale.creditInstallments || 1} parcela(s)${firstDue ? ` â€¢ 1Âº vencimento: ${firstDue}` : ""}</p>
       <div class="signature">Assinatura do cliente</div>
     ` : "";
     const popup = window.open("", "receipt", "width=380,height=620");
@@ -840,7 +840,7 @@ function ReceiptCard({ sale }) {
           <p class="badge">${modeLabel}</p>
           <p><strong>${sale.code}</strong></p>
           <p class="muted">${new Date(sale.createdAt || Date.now()).toLocaleString("pt-BR")}</p>
-          <p>Cliente: ${sale.customer?.name || "Cliente não cadastrado"}</p>
+          <p>Cliente: ${sale.customer?.name || "Cliente nÃ£o cadastrado"}</p>
           <table>
             <thead><tr><th>Item</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
             <tbody>${rows}</tbody>
@@ -849,7 +849,7 @@ function ReceiptCard({ sale }) {
           ${creditRows}
           ${sale.cashReceived ? `<p>Recebido: ${money(sale.cashReceived)}<br>Troco: ${money(sale.change)}</p>` : ""}
           <p class="total">Total: ${money(sale.total)}</p>
-          <p class="muted">Obrigada pela preferência!</p>
+          <p class="muted">Obrigada pela preferÃªncia!</p>
           <script>window.print(); window.close();</script>
         </body>
       </html>
@@ -860,11 +860,11 @@ function ReceiptCard({ sale }) {
   return (
     <div className="receipt-card">
       <div>
-        <small>Última venda</small>
+        <small>Ãšltima venda</small>
         <strong>{sale.code}</strong>
         <span>{money(sale.total)}</span>
-        <em>{sale.saleMode === "FIADO" ? "Cupom fiado pronto para assinatura" : "Cupom à vista pronto para imprimir"}</em>
-        <small>Fluxo concluído: estoque, caixa e relatórios atualizados.</small>
+        <em>{sale.saleMode === "FIADO" ? "Cupom fiado pronto para assinatura" : "Cupom Ã  vista pronto para imprimir"}</em>
+        <small>Fluxo concluÃ­do: estoque, caixa e relatÃ³rios atualizados.</small>
       </div>
       <button type="button" onClick={printReceipt}><Printer size={16} /> Imprimir</button>
     </div>
@@ -896,7 +896,7 @@ function Products() {
       imageUrl: product.imageUrl || "",
       variants: (product.variants || []).map((variant) => [variant.color, variant.size, variant.sku, variant.stock].join(",")).join("\n")
     });
-    setMessage("Editando produto. Revise as variações antes de salvar.");
+    setMessage("Editando produto. Revise as variaÃ§Ãµes antes de salvar.");
   }
 
   async function loadProducts() {
@@ -938,15 +938,15 @@ function Products() {
   }
 
   const productStats = [
-    ["Produtos ativos", products.filter((item) => item.active).length, "itens disponíveis", Package, "rose"],
-    ["Categorias", new Set(products.map((item) => item.category?.name).filter(Boolean)).size, "organização da vitrine", Boxes, "amber"],
+    ["Produtos ativos", products.filter((item) => item.active).length, "itens disponÃ­veis", Package, "rose"],
+    ["Categorias", new Set(products.map((item) => item.category?.name).filter(Boolean)).size, "organizaÃ§Ã£o da vitrine", Boxes, "amber"],
     ["Estoque total", products.reduce((sum, item) => sum + (item.variants || []).reduce((acc, variant) => acc + Number(variant.stock || 0), 0), 0), "unidades cadastradas", ShoppingBag, "green"]
   ];
 
   return (
     <section className="page two-col">
       <div>
-        <div className="page-title"><h2>Produtos</h2><p>Cadastro com categoria, marca, foto, preço e variações de roupa.</p></div>
+        <div className="page-title"><h2>Produtos</h2><p>Cadastro com categoria, marca, foto, preÃ§o e variaÃ§Ãµes de roupa.</p></div>
         <InsightStrip items={productStats} />
         <div className="panel-actions">
           <button onClick={() => exportCsv("produtos-sud-daiana.csv", products, ["name", "sku", "category.name", "salePrice", "active"])}>Exportar CSV</button>
@@ -967,8 +967,8 @@ function Products() {
         <input placeholder="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input placeholder="SKU principal" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} />
         <input placeholder="URL da foto" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
-        <input placeholder="Preço de custo" value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: e.target.value })} />
-        <input placeholder="Preço de venda" value={form.salePrice} onChange={(e) => setForm({ ...form, salePrice: e.target.value })} />
+        <input placeholder="PreÃ§o de custo" value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: e.target.value })} />
+        <input placeholder="PreÃ§o de venda" value={form.salePrice} onChange={(e) => setForm({ ...form, salePrice: e.target.value })} />
         <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
           <option value="">Categoria</option>
           {options.categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
@@ -977,10 +977,10 @@ function Products() {
           <option value="">Marca opcional</option>
           {options.brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
-        <small className="form-help">Variações: uma por linha no formato cor, tamanho, SKU, estoque.</small>
+        <small className="form-help">VariaÃ§Ãµes: uma por linha no formato cor, tamanho, SKU, estoque.</small>
         <textarea rows="4" value={form.variants} onChange={(e) => setForm({ ...form, variants: e.target.value })} />
-        <button className="primary">{editingId ? "Salvar alterações" : "Salvar produto"}</button>
-        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edição</button>}
+        <button className="primary">{editingId ? "Salvar alteraÃ§Ãµes" : "Salvar produto"}</button>
+        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar ediÃ§Ã£o</button>}
         {message && <p className="notice">{message}</p>}
       </form>
     </section>
@@ -1048,7 +1048,7 @@ function Customers() {
   return (
     <section className="page two-col">
       <div>
-        <div className="page-title"><h2>Clientes</h2><p>Histórico, WhatsApp, fidelidade e saldo de crediário.</p></div>
+        <div className="page-title"><h2>Clientes</h2><p>HistÃ³rico, WhatsApp, fidelidade e saldo de crediÃ¡rio.</p></div>
         <InsightStrip items={customerStats} />
         <div className="panel-actions">
           <button onClick={() => exportCsv("clientes-sud-daiana.csv", rows, ["name", "phone", "cpf", "email", "loyaltyPoints"])}>Exportar CSV</button>
@@ -1059,7 +1059,7 @@ function Customers() {
           actions={(customer) => (
             <>
               <button onClick={() => edit(customer)}>Editar</button>
-              <a className="table-link" href={whatsAppUrl(customer.phone, `Olá ${customer.name}, tudo bem? Aqui é da Sud Daiana Modas.`)} target="_blank" rel="noreferrer">WhatsApp</a>
+              <a className="table-link" href={whatsAppUrl(customer.phone, `OlÃ¡ ${customer.name}, tudo bem? Aqui Ã© da Sud Daiana Modas.`)} target="_blank" rel="noreferrer">WhatsApp</a>
             </>
           )}
         />
@@ -1071,13 +1071,13 @@ function Customers() {
           ["phone", "Telefone/WhatsApp"],
           ["cpf", "CPF"],
           ["email", "E-mail"],
-          ["address", "Endereço"],
+          ["address", "EndereÃ§o"],
           ["district", "Bairro"],
           ["city", "Cidade"],
-          ["notes", "Observações"]
+          ["notes", "ObservaÃ§Ãµes"]
         ].map(([field, label]) => <input key={field} placeholder={label} value={form[field]} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />)}
-        <button className="primary">{editingId ? "Salvar alterações" : "Salvar cliente"}</button>
-        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edição</button>}
+        <button className="primary">{editingId ? "Salvar alteraÃ§Ãµes" : "Salvar cliente"}</button>
+        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar ediÃ§Ã£o</button>}
         {message && <p className="notice">{message}</p>}
       </form>
     </section>
@@ -1093,9 +1093,9 @@ function SimpleModule({ title, endpoint, description, columns = ["id", "name", "
     <section className="page">
       <div className="page-title"><h2>{title}</h2><p>{description}</p></div>
       <InsightStrip items={[
-        ["Registros", rows.length, "no módulo", FileText, "rose"],
+        ["Registros", rows.length, "no mÃ³dulo", FileText, "rose"],
         ["Em andamento", statusCount || activeRows, "ativos ou pendentes", CalendarHeart, "amber"],
-        ["Exportação", rows.length ? "Pronta" : "Aguardando", "CSV disponível", Package, "green"]
+        ["ExportaÃ§Ã£o", rows.length ? "Pronta" : "Aguardando", "CSV disponÃ­vel", Package, "green"]
       ]} />
       <div className="panel">
         <div className="panel-head compact"><h3>{title === "Estoque" ? "Produtos monitorados" : `Lista de ${title.toLowerCase()}`}</h3></div>
@@ -1106,7 +1106,7 @@ function SimpleModule({ title, endpoint, description, columns = ["id", "name", "
           rows={rows}
           columns={columns}
           actions={title === "Delivery" ? (row) => (
-            <a className="table-link" href={whatsAppUrl(row.phone, `Olá ${row.customerName}, seu pedido da Sud Daiana Modas está com status: ${formatText(row.status)}.`)} target="_blank" rel="noreferrer">WhatsApp</a>
+            <a className="table-link" href={whatsAppUrl(row.phone, `OlÃ¡ ${row.customerName}, seu pedido da Sud Daiana Modas estÃ¡ com status: ${formatText(row.status)}.`)} target="_blank" rel="noreferrer">WhatsApp</a>
           ) : null}
         />
       </div>
@@ -1134,10 +1134,10 @@ function CreditPage() {
 
   return (
     <section className="page">
-      <div className="page-title"><h2>Crediário</h2><p>Controle clientes devendo, parcelas pendentes e baixas de pagamento.</p></div>
+      <div className="page-title"><h2>CrediÃ¡rio</h2><p>Controle clientes devendo, parcelas pendentes e baixas de pagamento.</p></div>
       <InsightStrip items={[
         ["Saldo em aberto", money(openTotal), "a receber", CreditCard, "rose"],
-        ["Clientes no crediário", rows.length, "contas abertas", Users, "purple"],
+        ["Clientes no crediÃ¡rio", rows.length, "contas abertas", Users, "purple"],
         ["Parcelas pendentes", pendingInstallments.length, "para acompanhar", CalendarHeart, "amber"]
       ]} />
       {message && <p className="notice">{message}</p>}
@@ -1148,7 +1148,7 @@ function CreditPage() {
             <button onClick={() => exportCsv("crediario-sud-daiana.csv", rows, ["customer.name", "sale.code", "total", "paid", "status"])}>Exportar CSV</button>
           </div>
           <table>
-            <thead><tr><th>Cliente</th><th>Venda</th><th>Total</th><th>Pago</th><th>Parcelas</th><th>Ações</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Venda</th><th>Total</th><th>Pago</th><th>Parcelas</th><th>AÃ§Ãµes</th></tr></thead>
             <tbody>
               {rows.map((account) => (
                 <tr key={account.id}>
@@ -1166,11 +1166,11 @@ function CreditPage() {
                     </div>
                   </td>
                   <td className="actions-cell">
-                    <a className="table-link" href={whatsAppUrl(account.customer?.phone, `Olá ${account.customer?.name}, tudo bem? Passando para lembrar das parcelas em aberto na Sud Daiana Modas.`)} target="_blank" rel="noreferrer">Cobrar no WhatsApp</a>
+                    <a className="table-link" href={whatsAppUrl(account.customer?.phone, `OlÃ¡ ${account.customer?.name}, tudo bem? Passando para lembrar das parcelas em aberto na Sud Daiana Modas.`)} target="_blank" rel="noreferrer">Cobrar no WhatsApp</a>
                   </td>
                 </tr>
               ))}
-              {!rows.length && <tr><td className="empty-cell" colSpan="6"><strong>Nenhum crediário em aberto.</strong><span>Quando uma venda for feita no crediário, as parcelas aparecerão aqui.</span></td></tr>}
+              {!rows.length && <tr><td className="empty-cell" colSpan="6"><strong>Nenhum crediÃ¡rio em aberto.</strong><span>Quando uma venda for feita no crediÃ¡rio, as parcelas aparecerÃ£o aqui.</span></td></tr>}
             </tbody>
           </table>
         </div>
@@ -1239,10 +1239,10 @@ function CashPage() {
   return (
     <section className="page two-col">
       <div>
-        <div className="page-title"><h2>Caixa</h2><p>Abertura, movimentos, vendas automáticas e fechamento.</p></div>
+        <div className="page-title"><h2>Caixa</h2><p>Abertura, movimentos, vendas automÃ¡ticas e fechamento.</p></div>
         <InsightStrip items={[
           ["Status do caixa", openCash ? "Aberto" : "Fechado", openCash ? "pronto para vender" : "abra antes do PDV", WalletCards, openCash ? "green" : "amber"],
-          ["Movimentos", movementCount, "entradas, vendas e saídas", FileText, "rose"],
+          ["Movimentos", movementCount, "entradas, vendas e saÃ­das", FileText, "rose"],
           ["Total esperado", money(cashExpected), "para fechamento", BadgeDollarSign, "purple"]
         ]} />
         {message && <p className="notice">{message}</p>}
@@ -1265,17 +1265,17 @@ function CashPage() {
             <p>Operador: <strong>{openCash.operatorName}</strong></p>
             <select value={movement.type} onChange={(e) => setMovement({ ...movement, type: e.target.value })}>
               <option value="ENTRADA">Entrada</option>
-              <option value="SAIDA">Saída</option>
+              <option value="SAIDA">SaÃ­da</option>
               <option value="SANGRIA">Sangria</option>
             </select>
             <select value={movement.method} onChange={(e) => setMovement({ ...movement, method: e.target.value })}>
               <option value="DINHEIRO">Dinheiro</option>
               <option value="PIX">Pix</option>
-              <option value="CREDITO">Crédito</option>
-              <option value="DEBITO">Débito</option>
+              <option value="CREDITO">CrÃ©dito</option>
+              <option value="DEBITO">DÃ©bito</option>
             </select>
             <input placeholder="Valor" value={movement.amount} onChange={(e) => setMovement({ ...movement, amount: e.target.value })} />
-            <input placeholder="Descrição" value={movement.description} onChange={(e) => setMovement({ ...movement, description: e.target.value })} />
+            <input placeholder="DescriÃ§Ã£o" value={movement.description} onChange={(e) => setMovement({ ...movement, description: e.target.value })} />
             <button className="primary">Adicionar movimento</button>
             <button type="button" onClick={closeCash}>Fechar caixa</button>
           </form>
@@ -1290,11 +1290,11 @@ function Reports() {
   useEffect(() => { api("/api/reports").then(setData); }, []);
   return (
     <section className="page">
-      <div className="page-title"><h2>Relatórios</h2><p>Vendas, formas de pagamento, clientes, estoque baixo e exportações.</p></div>
+      <div className="page-title"><h2>RelatÃ³rios</h2><p>Vendas, formas de pagamento, clientes, estoque baixo e exportaÃ§Ãµes.</p></div>
       <InsightStrip items={[
         ["Formas de pagamento", data?.byPayment?.length || 0, "com movimento", CreditCard, "rose"],
-        ["Estoque crítico", data?.lowStock?.length || 0, "variações baixas", Boxes, "amber"],
-        ["Total recebido", money((data?.byPayment || []).reduce((sum, item) => sum + Number(item._sum?.amount || 0), 0)), "no período", BadgeDollarSign, "green"]
+        ["Estoque crÃ­tico", data?.lowStock?.length || 0, "variaÃ§Ãµes baixas", Boxes, "amber"],
+        ["Total recebido", money((data?.byPayment || []).reduce((sum, item) => sum + Number(item._sum?.amount || 0), 0)), "no perÃ­odo", BadgeDollarSign, "green"]
       ]} />
       <div className="panel-actions">
         <button onClick={() => exportCsv("estoque-baixo-sud-daiana.csv", data?.lowStock || [], ["product.name", "color", "size", "stock"])}>Exportar estoque baixo</button>
@@ -1346,7 +1346,7 @@ function OnlineStore() {
       ? product.variants?.find((item) => String(item.id) === String(variantId))
       : product.variants?.find((item) => Number(item.stock || 0) > 0);
     if (!variant) {
-      setMessage("Produto sem estoque disponível para pedido online.");
+      setMessage("Produto sem estoque disponÃ­vel para pedido online.");
       return;
     }
     const price = Number(variant.price || product.promoPrice || product.salePrice);
@@ -1401,11 +1401,11 @@ function OnlineStore() {
         <div>
           <span className="eyebrow">Vitrine mobile</span>
           <h2>Pedido Online Sud Daiana Modas</h2>
-          <p>Catálogo bonito para vender pelo celular, divulgar promoções e receber pedidos no delivery.</p>
+          <p>Catálogo bonito para vender pelo celular, divulgar promoÃ§Ãµes e receber pedidos no delivery.</p>
           <div className="online-hero-actions">
             <button className={filter === "todos" ? "active" : ""} type="button" onClick={() => setFilter("todos")}>Tudo</button>
-            <button className={filter === "promocoes" ? "active" : ""} type="button" onClick={() => setFilter("promocoes")}>Promoções</button>
-            <button className={filter === "disponiveis" ? "active" : ""} type="button" onClick={() => setFilter("disponiveis")}>Disponíveis</button>
+            <button className={filter === "promocoes" ? "active" : ""} type="button" onClick={() => setFilter("promocoes")}>PromoÃ§Ãµes</button>
+            <button className={filter === "disponiveis" ? "active" : ""} type="button" onClick={() => setFilter("disponiveis")}>DisponÃ­veis</button>
           </div>
         </div>
         <div className="online-hero-card">
@@ -1415,15 +1415,15 @@ function OnlineStore() {
         </div>
       </div>
       <InsightStrip items={[
-        ["Produtos na vitrine", products.length, "visíveis para venda", ShoppingBag, "rose"],
-        ["Promoções", featured.length, "campanhas ativas", Gift, "amber"],
-        ["Canal rápido", "Delivery", "pedido chega no painel", Truck, "green"]
+        ["Produtos na vitrine", products.length, "visÃ­veis para venda", ShoppingBag, "rose"],
+        ["PromoÃ§Ãµes", featured.length, "campanhas ativas", Gift, "amber"],
+        ["Canal rÃ¡pido", "Delivery", "pedido chega no painel", Truck, "green"]
       ]} />
       <div className="online-layout">
         <div>
           <div className="online-search">
             <Search size={18} />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar vestido, blusa, calça..." />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar vestido, blusa, calÃ§a..." />
           </div>
           <div className="online-product-grid">
             {filtered.map((product) => {
@@ -1434,19 +1434,19 @@ function OnlineStore() {
                 <article className="online-card" key={product.id}>
                   <div className="online-media">
                     <img src={product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80"} alt="" />
-                    <span>{hasPromo ? "Promoção" : product.category?.name || "Produto"}</span>
+                    <span>{hasPromo ? "PromoÃ§Ã£o" : product.category?.name || "Produto"}</span>
                   </div>
                   <div className="online-card-body">
                     <strong>{product.name}</strong>
                     <p>{product.description || `${product.category?.name || "Moda"} com pronta entrega na Sud Daiana Modas.`}</p>
                     <div className="online-price-row">
                       <span>{money(price)}</span>
-                      <small>{stock} un. disponíveis</small>
+                      <small>{stock} un. disponÃ­veis</small>
                     </div>
                     <div className="variant-pills">
                       {(product.variants || []).filter((item) => item.stock > 0).slice(0, 4).map((variant) => (
                         <button key={variant.id} type="button" onClick={() => addToOnlineCart(product, variant.id)}>
-                          {variant.size} {variant.color} · {variant.stock}
+                          {variant.size} {variant.color} Â· {variant.stock}
                         </button>
                       ))}
                     </div>
@@ -1455,7 +1455,7 @@ function OnlineStore() {
                 </article>
               );
             })}
-            {!filtered.length && <EmptyState title="Nenhum produto encontrado." text="Tente outro termo ou marque produtos como disponíveis online." />}
+            {!filtered.length && <EmptyState title="Nenhum produto encontrado." text="Tente outro termo ou marque produtos como disponÃ­veis online." />}
           </div>
         </div>
         <form className="online-checkout" onSubmit={order}>
@@ -1480,16 +1480,16 @@ function OnlineStore() {
           </select>
           {form.deliveryMode === "Entrega" && (
             <>
-              <input placeholder="Endereço" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} />
+              <input placeholder="EndereÃ§o" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} />
               <input placeholder="Bairro" value={form.district} onChange={(event) => setForm({ ...form, district: event.target.value })} />
             </>
           )}
           <input placeholder="Cidade" value={form.city} onChange={(event) => setForm({ ...form, city: event.target.value })} />
-          <input placeholder="Referência/observação" value={form.reference} onChange={(event) => setForm({ ...form, reference: event.target.value })} />
+          <input placeholder="ReferÃªncia/observaÃ§Ã£o" value={form.reference} onChange={(event) => setForm({ ...form, reference: event.target.value })} />
           <select value={form.payment} onChange={(event) => setForm({ ...form, payment: event.target.value })}>
             <option>Pix</option>
             <option>Dinheiro</option>
-            <option>Cartão</option>
+            <option>CartÃ£o</option>
             <option>Fiado</option>
           </select>
           <button className="primary" disabled={!cart.length}>Enviar pedido</button>
@@ -1512,9 +1512,9 @@ function OnlineStoreLegacy() {
     <section className="page">
       <div className="page-title"><h2>Vitrine de Pedido Online</h2><p>Catálogo simples para cliente escolher produtos e enviar pedido.</p></div>
       <InsightStrip items={[
-        ["Produtos na vitrine", products.length, "visíveis para venda", ShoppingBag, "rose"],
-        ["Canal rápido", "WhatsApp", "pedido chega no delivery", Truck, "green"],
-        ["Status", "Ativo", "catálogo disponível", Heart, "purple"]
+        ["Produtos na vitrine", products.length, "visÃ­veis para venda", ShoppingBag, "rose"],
+        ["Canal rÃ¡pido", "WhatsApp", "pedido chega no delivery", Truck, "green"],
+        ["Status", "Ativo", "catÃ¡logo disponÃ­vel", Heart, "purple"]
       ]} />
       <div className="product-grid">{products.map((product) => <article className="product-card" key={product.id}><img src={product.imageUrl} alt="" /><strong>{product.name}</strong><span>{money(product.promoPrice || product.salePrice)}</span></article>)}</div>
       <button className="primary" onClick={order}>Simular pedido online</button>
@@ -1528,12 +1528,12 @@ function SettingsPage() {
   const fields = [
     ["storeName", "Nome da loja"],
     ["cnpj", "CNPJ"],
-    ["stateRegistration", "Inscrição Estadual"],
-    ["address", "Endereço"],
+    ["stateRegistration", "InscriÃ§Ã£o Estadual"],
+    ["address", "EndereÃ§o"],
     ["phone", "Telefone"],
     ["whatsapp", "WhatsApp"],
     ["email", "E-mail"],
-    ["taxRegime", "Regime tributário"],
+    ["taxRegime", "Regime tributÃ¡rio"],
     ["fiscalEnvironment", "Ambiente fiscal"]
   ];
   useEffect(() => { api("/api/settings").then((data) => setForm(data || {})); }, []);
@@ -1544,14 +1544,14 @@ function SettingsPage() {
   return (
     <section className="page two-col">
       <div>
-        <div className="page-title"><h2>Configurações</h2><p>Dados da loja, fiscal, estoque, fidelidade e permissões.</p></div>
+        <div className="page-title"><h2>ConfiguraÃ§Ãµes</h2><p>Dados da loja, fiscal, estoque, fidelidade e permissÃµes.</p></div>
         <div className="setup-card">
           <strong>Checklist da loja</strong>
           <span>Complete estes dados para deixar recibos, fiscal e atendimento prontos.</span>
           <ul>
             <li>Nome, telefone e WhatsApp da loja</li>
             <li>Dados fiscais para NFC-e/NF-e</li>
-            <li>Ambiente fiscal e regime tributário</li>
+            <li>Ambiente fiscal e regime tributÃ¡rio</li>
           </ul>
         </div>
       </div>
@@ -1562,7 +1562,7 @@ function SettingsPage() {
             <input placeholder={label} value={form?.[field] || ""} onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
           </label>
         ))}
-        <button className="primary">Salvar configurações</button>
+        <button className="primary">Salvar configuraÃ§Ãµes</button>
       </form>
     </section>
   );
@@ -1584,7 +1584,7 @@ function UsersPage() {
   function edit(user) {
     setEditingId(user.id);
     setForm({ name: user.name, email: user.email, password: "", role: user.role, active: user.active });
-    setMessage("Editando usuário. Deixe a senha vazia para manter a atual.");
+    setMessage("Editando usuÃ¡rio. Deixe a senha vazia para manter a atual.");
   }
 
   async function save(event) {
@@ -1597,7 +1597,7 @@ function UsersPage() {
       setForm(empty);
       setEditingId(null);
       await load();
-      setMessage(editingId ? "Usuário atualizado." : "Usuário criado.");
+      setMessage(editingId ? "UsuÃ¡rio atualizado." : "UsuÃ¡rio criado.");
     } catch (err) {
       setMessage(err.message);
     }
@@ -1616,16 +1616,16 @@ function UsersPage() {
   return (
     <section className="page two-col">
       <div>
-        <div className="page-title"><h2>Usuários e Permissões</h2><p>Controle quem acessa o sistema e o papel de cada pessoa na loja.</p></div>
+        <div className="page-title"><h2>UsuÃ¡rios e PermissÃµes</h2><p>Controle quem acessa o sistema e o papel de cada pessoa na loja.</p></div>
         <InsightStrip items={[
-          ["Usuários", rows.length, "com acesso", UserCog, "rose"],
+          ["UsuÃ¡rios", rows.length, "com acesso", UserCog, "rose"],
           ["Ativos", rows.filter((item) => item.active).length, "podem entrar", Heart, "green"],
           ["Administradores", rows.filter((item) => item.role === "ADMIN").length, "controle total", Settings, "purple"]
         ]} />
         <div className="panel">
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead>
+              <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th>AÃ§Ãµes</th></tr></thead>
               <tbody>
                 {rows.map((user) => (
                   <tr key={user.id}>
@@ -1645,7 +1645,7 @@ function UsersPage() {
         </div>
       </div>
       <form className="panel form-stack" onSubmit={save}>
-        <h3>{editingId ? "Editar usuário" : "Novo usuário"}</h3>
+        <h3>{editingId ? "Editar usuÃ¡rio" : "Novo usuÃ¡rio"}</h3>
         <input placeholder="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <input type="password" placeholder={editingId ? "Nova senha opcional" : "Senha"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
@@ -1656,9 +1656,9 @@ function UsersPage() {
           <option value="ESTOQUISTA">Estoquista</option>
           <option value="ENTREGADOR">Entregador</option>
         </select>
-        <label className="check-row"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Usuário ativo</label>
-        <button className="primary">{editingId ? "Salvar alterações" : "Criar usuário"}</button>
-        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar edição</button>}
+        <label className="check-row"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> UsuÃ¡rio ativo</label>
+        <button className="primary">{editingId ? "Salvar alteraÃ§Ãµes" : "Criar usuÃ¡rio"}</button>
+        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(empty); }}>Cancelar ediÃ§Ã£o</button>}
         {message && <p className="notice">{message}</p>}
       </form>
     </section>
@@ -1678,7 +1678,7 @@ function roleLabel(role) {
 function DataTable({ rows, columns, actions }) {
   const safeRows = rows || [];
   const labels = {
-    id: "Código",
+    id: "CÃ³digo",
     code: "Venda",
     sku: "SKU",
     name: "Nome",
@@ -1696,11 +1696,11 @@ function DataTable({ rows, columns, actions }) {
     type: "Tipo",
     target: "Alvo",
     discountValue: "Desconto",
-    startsAt: "Início",
+    startsAt: "InÃ­cio",
     endsAt: "Fim",
-    number: "Número",
+    number: "NÃºmero",
     provider: "Provedor",
-    salePrice: "Preço de venda",
+    salePrice: "PreÃ§o de venda",
     openingAmount: "Valor inicial",
     closingAmount: "Valor final",
     operatorName: "Operador",
@@ -1721,7 +1721,7 @@ function DataTable({ rows, columns, actions }) {
     if (key.toLowerCase().includes("price") || ["total", "fee", "discountValue", "openingAmount", "closingAmount"].includes(key)) return money(val);
     if (key === "status") return <StatusBadge value={val} />;
     if ((/(At|Date)$/i.test(key) || key === "openedAt") && val) return new Date(val).toLocaleDateString("pt-BR");
-    if (typeof val === "boolean") return <StatusBadge value={val ? "SIM" : "NÃO"} />;
+    if (typeof val === "boolean") return <StatusBadge value={val ? "SIM" : "NÃƒO"} />;
     if (typeof val === "string" && /^[A-Z_]+$/.test(val)) return formatText(val);
     if (val && typeof val === "object") return JSON.stringify(val);
     return val ?? "-";
@@ -1729,9 +1729,9 @@ function DataTable({ rows, columns, actions }) {
   return (
     <div className="table-wrap">
       <table>
-        <thead><tr>{columns.map((col) => <th key={col}>{labels[col] || col}</th>)}{actions && <th>Ações</th>}</tr></thead>
+        <thead><tr>{columns.map((col) => <th key={col}>{labels[col] || col}</th>)}{actions && <th>AÃ§Ãµes</th>}</tr></thead>
         <tbody>
-          {safeRows.length === 0 && <tr><td className="empty-cell" colSpan={columns.length + (actions ? 1 : 0)}><strong>Nenhum registro encontrado.</strong><span>Quando houver dados neste módulo, eles aparecerão aqui.</span></td></tr>}
+          {safeRows.length === 0 && <tr><td className="empty-cell" colSpan={columns.length + (actions ? 1 : 0)}><strong>Nenhum registro encontrado.</strong><span>Quando houver dados neste mÃ³dulo, eles aparecerÃ£o aqui.</span></td></tr>}
           {safeRows.map((row, index) => (
             <tr key={row.id || index}>
               {columns.map((col) => <td key={col}>{value(row, col)}</td>)}
@@ -1786,7 +1786,7 @@ function StatusBadge({ value }) {
     PRONTO_ENTREGA: "info",
     SAIU_ENTREGA: "info",
     INATIVO: "muted",
-    NÃO: "muted",
+    NÃƒO: "muted",
     FECHADO: "muted",
     CANCELADO: "danger",
     CANCELADA: "danger",

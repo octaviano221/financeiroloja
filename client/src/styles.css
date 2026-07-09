@@ -1973,15 +1973,15 @@ tbody tr:hover {
 .pdv-operator-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 18px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .pdv-operator-bar span {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 13px;
+  padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: rgba(255,255,255,0.88);
@@ -1996,11 +1996,11 @@ tbody tr:hover {
 
 .pdv-workstation .pdv-hero {
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .pdv-workstation .pdv-hero h2 {
-  font-size: clamp(30px, 3.2vw, 38px);
+  font-size: clamp(28px, 3vw, 34px);
   line-height: 1.02;
   max-width: 340px;
 }
@@ -2016,12 +2016,12 @@ tbody tr:hover {
 
 .pdv-workstation .barcode-panel > div {
   gap: 12px;
-  padding: 16px 18px;
+  padding: 13px 16px;
 }
 
 .pdv-workstation .barcode-panel svg {
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   background: transparent;
   color: var(--ink);
   box-shadow: none;
@@ -2032,11 +2032,11 @@ tbody tr:hover {
 }
 
 .pdv-workstation .barcode-panel input {
-  min-height: 48px;
+  min-height: 42px;
   border: 0;
   box-shadow: none;
   padding: 0;
-  font-size: clamp(16px, 1.55vw, 22px);
+  font-size: clamp(15px, 1.4vw, 20px);
   color: var(--ink);
 }
 
@@ -2081,7 +2081,7 @@ tbody tr:hover {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 58px;
+  min-height: 52px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: rgba(255,255,255,0.92);
@@ -2115,12 +2115,12 @@ tbody tr:hover {
 }
 
 .pdv-category-row button {
-  min-height: 48px;
+  min-height: 44px;
 }
 
 .sale-items-panel {
   margin-bottom: 14px;
-  padding: 14px;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(255,255,255,0.94);
@@ -2223,7 +2223,7 @@ tbody tr:hover {
   display: grid;
   place-items: center;
   gap: 8px;
-  padding: 22px 14px;
+  padding: 18px 14px;
   color: var(--muted);
   text-align: center;
   background:
