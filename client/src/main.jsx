@@ -282,7 +282,7 @@ function Dashboard() {
           <ul className="soft-list">
             <li>{data?.alerts?.overdueCredit || 0} parcelas vencidas</li>
             <li>{data?.alerts?.pendingDelivery || 0} entregas aguardando</li>
-            {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li key={item.id}>{item.name} {item.size} com {item.stock} un.</li>)}
+            {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li key={item.id}>{displayText(item.name)} {item.size} com {item.stock} un.</li>)}
           </ul>
         </section>
         <section className="panel wide">
@@ -394,7 +394,7 @@ function DashboardPremium() {
           <ul className="alert-list">
             <li className="success"><span>{data?.alerts?.overdueCredit || 0} parcelas vencidas<small>Situação em dia</small></span><em className="alert-pill ok">Ok</em></li>
             <li className="warning"><span>{data?.alerts?.pendingDelivery || 0} entregas aguardando<small>Acompanhe as entregas</small></span><em className="alert-pill pending">Pendente</em></li>
-            {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li className="warning" key={item.id}><span>{item.name} {item.size} com {item.stock} un.<small>Estoque baixo</small></span><em className="alert-pill low">Baixo</em></li>)}
+            {(data?.alerts?.lowStock || []).slice(0, 4).map((item) => <li className="warning" key={item.id}><span>{displayText(item.name)} {item.size} com {item.stock} un.<small>Estoque baixo</small></span><em className="alert-pill low">Baixo</em></li>)}
           </ul>
         </section>
 
@@ -540,18 +540,18 @@ function PDV() {
       const variant = (product.variants || []).find((item) => [item.barcode, item.sku].filter(Boolean).some((value) => String(value).toLowerCase() === code));
       if (variant) {
         if (Number(variant.stock || 0) <= 0) {
-          setMessage(`Sem estoque para ${product.name} ${variant.size} ${variant.color}.`);
+          setMessage(`Sem estoque para ${displayText(product.name)} ${variant.size} ${displayText(variant.color)}.`);
           return;
         }
         add(product, variant.id);
         setBarcodeQuery("");
-        setMessage(`Produto adicionado: ${product.name} (${variant.size} ${variant.color}).`);
+        setMessage(`Produto adicionado: ${displayText(product.name)} (${variant.size} ${displayText(variant.color)}).`);
         return;
       }
       if ([product.barcode, product.sku].filter(Boolean).some((value) => String(value).toLowerCase() === code)) {
         add(product);
         setBarcodeQuery("");
-        setMessage(`Produto adicionado: ${product.name}.`);
+        setMessage(`Produto adicionado: ${displayText(product.name)}.`);
         return;
       }
     }
@@ -658,7 +658,7 @@ function PDV() {
               <div className="sale-table-row" key={`${item.productId}-${index}`}>
                 <span className="sale-product">
                   <img src={item.product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=120&q=80"} alt="" />
-                  <span>{item.product.name}<small>{item.variant?.color} - {item.variant?.size}</small><em>SKU: {item.variant?.sku || item.product.sku}</em></span>
+                  <span>{displayText(item.product.name)}<small>{displayText(item.variant?.color)} - {item.variant?.size}</small><em>SKU: {item.variant?.sku || item.product.sku}</em></span>
                 </span>
                 <span className="qty-stepper">
                   <button type="button" onClick={() => updateCart(index, { quantity: item.quantity - 1 })}><Minus size={14} /></button>
@@ -693,16 +693,16 @@ function PDV() {
             <article className="product-card" key={product.id}>
               <div className="product-media">
                 <img src={product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80"} alt="" />
-                <span className="category-chip">{product.category?.name || "Produto"}</span>
+                <span className="category-chip">{displayText(product.category?.name || "Produto")}</span>
                 <button className="favorite-btn" type="button" title="Favoritar"><Heart size={18} /></button>
               </div>
-              <strong>{product.name}</strong>
+              <strong>{displayText(product.name)}</strong>
               <span>{money(product.promoPrice || product.salePrice)}</span>
-              <small className="product-meta">{product.category?.name || "Produto"} <i /> {product.variants?.reduce((sum, item) => sum + Number(item.stock || 0), 0)} un.</small>
+              <small className="product-meta">{displayText(product.category?.name || "Produto")} <i /> {product.variants?.reduce((sum, item) => sum + Number(item.stock || 0), 0)} un.</small>
               <div className="variant-pills">
                 {(product.variants || []).filter((item) => item.stock > 0).slice(0, 4).map((variant) => (
                   <button key={variant.id} onClick={() => add(product, variant.id)}>
-                    {variant.size} {variant.color} · {variant.stock}
+                    {variant.size} {displayText(variant.color)} · {variant.stock}
                   </button>
                 ))}
               </div>
@@ -729,7 +729,7 @@ function PDV() {
         <div className="cart-lines">
           {cart.map((item, index) => (
             <div className="cart-line" key={`${item.productId}-${index}`}>
-              <span>{item.product.name}<small>{item.variant?.color} {item.variant?.size}</small></span>
+              <span>{displayText(item.product.name)}<small>{displayText(item.variant?.color)} {item.variant?.size}</small></span>
               <div className="qty-stepper">
                 <button type="button" onClick={() => updateCart(index, { quantity: item.quantity - 1 })}><Minus size={14} /></button>
                 <input type="number" min="1" value={item.quantity} onChange={(event) => updateCart(index, { quantity: Number(event.target.value) })} />
@@ -1434,11 +1434,11 @@ function OnlineStore() {
                 <article className="online-card" key={product.id}>
                   <div className="online-media">
                     <img src={product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=600&q=80"} alt="" />
-                    <span>{hasPromo ? "Promoção" : product.category?.name || "Produto"}</span>
+                    <span>{displayText(hasPromo ? "Promoção" : product.category?.name || "Produto")}</span>
                   </div>
                   <div className="online-card-body">
-                    <strong>{product.name}</strong>
-                    <p>{product.description || `${product.category?.name || "Moda"} com pronta entrega na Sud Daiana Modas.`}</p>
+                    <strong>{displayText(product.name)}</strong>
+                    <p>{displayText(product.description || `${product.category?.name || "Moda"} com pronta entrega na Sud Daiana Modas.`)}</p>
                     <div className="online-price-row">
                       <span>{money(price)}</span>
                       <small>{stock} un. disponíveis</small>
@@ -1446,7 +1446,7 @@ function OnlineStore() {
                     <div className="variant-pills">
                       {(product.variants || []).filter((item) => item.stock > 0).slice(0, 4).map((variant) => (
                         <button key={variant.id} type="button" onClick={() => addToOnlineCart(product, variant.id)}>
-                          {variant.size} {variant.color} · {variant.stock}
+                          {variant.size} {displayText(variant.color)} · {variant.stock}
                         </button>
                       ))}
                     </div>
@@ -1463,7 +1463,7 @@ function OnlineStore() {
           <div className="online-cart-lines">
             {cart.map((item) => (
               <div className="online-cart-line" key={item.key}>
-                <span>{item.name}<small>{item.size} {item.color}</small></span>
+                <span>{displayText(item.name)}<small>{item.size} {displayText(item.color)}</small></span>
                 <input type="number" min="1" max={item.stock} value={item.quantity} onChange={(event) => updateOnlineCart(item.key, event.target.value)} />
                 <strong>{money(item.quantity * item.price)}</strong>
                 <button type="button" onClick={() => setCart((current) => current.filter((row) => row.key !== item.key))}><X size={14} /></button>
@@ -1516,7 +1516,7 @@ function OnlineStoreLegacy() {
         ["Canal rápido", "WhatsApp", "pedido chega no delivery", Truck, "green"],
         ["Status", "Ativo", "catálogo disponível", Heart, "purple"]
       ]} />
-      <div className="product-grid">{products.map((product) => <article className="product-card" key={product.id}><img src={product.imageUrl} alt="" /><strong>{product.name}</strong><span>{money(product.promoPrice || product.salePrice)}</span></article>)}</div>
+      <div className="product-grid">{products.map((product) => <article className="product-card" key={product.id}><img src={product.imageUrl} alt="" /><strong>{displayText(product.name)}</strong><span>{money(product.promoPrice || product.salePrice)}</span></article>)}</div>
       <button className="primary" onClick={order}>Simular pedido online</button>
       {message && <p className="notice">{message}</p>}
     </section>
@@ -1724,7 +1724,7 @@ function DataTable({ rows, columns, actions }) {
     if (typeof val === "boolean") return <StatusBadge value={val ? "SIM" : "NÃO"} />;
     if (typeof val === "string" && /^[A-Z_]+$/.test(val)) return formatText(val);
     if (val && typeof val === "object") return JSON.stringify(val);
-    return val ?? "-";
+    return typeof val === "string" ? displayText(val) : val ?? "-";
   }
   return (
     <div className="table-wrap">
@@ -1802,6 +1802,23 @@ function formatText(value) {
     .replaceAll("_", " ")
     .toLowerCase()
     .replace(/(^|\s)\S/g, (letter) => letter.toUpperCase());
+}
+
+function displayText(value) {
+  if (value == null) return "";
+  return String(value)
+    .replace(/\bBasica\b/g, "Básica")
+    .replace(/\bbasica\b/g, "básica")
+    .replace(/\bCalca\b/g, "Calça")
+    .replace(/\bcalca\b/g, "calça")
+    .replace(/\bCalcas\b/g, "Calças")
+    .replace(/\bcalcas\b/g, "calças")
+    .replace(/\bCodigo\b/g, "Código")
+    .replace(/\bcodigo\b/g, "código")
+    .replace(/\bPromocao\b/g, "Promoção")
+    .replace(/\bpromocao\b/g, "promoção")
+    .replace(/\bPromocoes\b/g, "Promoções")
+    .replace(/\bpromocoes\b/g, "promoções");
 }
 
 function App() {
