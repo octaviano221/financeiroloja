@@ -1964,10 +1964,10 @@ tbody tr:hover {
 
 .pdv-workstation {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 410px);
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  gap: 16px;
   align-items: start;
-  padding-top: 22px;
+  padding-top: 18px;
 }
 
 .pdv-operator-bar {
@@ -1996,15 +1996,17 @@ tbody tr:hover {
 
 .pdv-workstation .pdv-hero {
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .pdv-workstation .pdv-hero h2 {
-  font-size: clamp(30px, 4vw, 44px);
+  font-size: clamp(30px, 3.2vw, 38px);
+  line-height: 1.02;
+  max-width: 340px;
 }
 
 .pdv-workstation .barcode-panel {
-  grid-template-columns: minmax(0, 1fr) 190px;
+  grid-template-columns: minmax(0, 1fr) 165px;
   padding: 0;
   border-color: rgba(217,63,106,0.28);
   border-width: 2px;
@@ -2013,13 +2015,13 @@ tbody tr:hover {
 }
 
 .pdv-workstation .barcode-panel > div {
-  gap: 16px;
-  padding: 18px 20px;
+  gap: 12px;
+  padding: 16px 18px;
 }
 
 .pdv-workstation .barcode-panel svg {
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
   background: transparent;
   color: var(--ink);
   box-shadow: none;
@@ -2030,11 +2032,11 @@ tbody tr:hover {
 }
 
 .pdv-workstation .barcode-panel input {
-  min-height: 54px;
+  min-height: 48px;
   border: 0;
   box-shadow: none;
   padding: 0;
-  font-size: 24px;
+  font-size: clamp(16px, 1.55vw, 22px);
   color: var(--ink);
 }
 
@@ -2065,8 +2067,8 @@ tbody tr:hover {
 .pdv-command-row,
 .pdv-category-row {
   display: grid;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .pdv-command-row {
@@ -2079,7 +2081,7 @@ tbody tr:hover {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 74px;
+  min-height: 58px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: rgba(255,255,255,0.92);
@@ -2113,12 +2115,12 @@ tbody tr:hover {
 }
 
 .pdv-category-row button {
-  min-height: 56px;
+  min-height: 48px;
 }
 
 .sale-items-panel {
-  margin-bottom: 16px;
-  padding: 16px;
+  margin-bottom: 14px;
+  padding: 14px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(255,255,255,0.94);
@@ -2162,7 +2164,7 @@ tbody tr:hover {
 .sale-table-head,
 .sale-table-row {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 120px 120px 110px 120px 42px;
+  grid-template-columns: minmax(220px, 1fr) 104px 104px 92px 104px 38px;
   align-items: center;
   gap: 10px;
 }
@@ -2176,8 +2178,8 @@ tbody tr:hover {
 }
 
 .sale-table-row {
-  min-height: 74px;
-  padding: 10px 12px;
+  min-height: 66px;
+  padding: 8px 10px;
   border-top: 1px solid var(--line);
   background: #fff;
 }
@@ -2190,8 +2192,8 @@ tbody tr:hover {
 }
 
 .sale-product img {
-  width: 52px;
-  height: 52px;
+  width: 46px;
+  height: 46px;
   border-radius: 10px;
   object-fit: cover;
   background: var(--rose-soft);
@@ -2221,7 +2223,7 @@ tbody tr:hover {
   display: grid;
   place-items: center;
   gap: 8px;
-  padding: 28px 16px;
+  padding: 22px 14px;
   color: var(--muted);
   text-align: center;
   background:
@@ -2252,7 +2254,7 @@ tbody tr:hover {
 }
 
 .pdv-workstation .product-grid {
-  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  grid-template-columns: repeat(4, minmax(135px, 1fr));
   gap: 10px;
 }
 
@@ -2283,7 +2285,7 @@ tbody tr:hover {
 
 .pos-summary {
   top: 82px;
-  gap: 14px;
+  gap: 12px;
   border: 1px solid rgba(217,63,106,0.14);
 }
 
@@ -2293,18 +2295,18 @@ tbody tr:hover {
 
 .pos-summary .summary-lines {
   gap: 10px;
-  padding: 16px;
+  padding: 14px;
   background: #fff;
 }
 
 .pos-summary .summary-lines span {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .pos-summary .total {
   display: grid;
   gap: 4px;
-  padding: 20px;
+  padding: 18px;
   text-align: right;
 }
 
@@ -2316,13 +2318,13 @@ tbody tr:hover {
 }
 
 .pos-summary .total strong {
-  font-size: clamp(36px, 4vw, 54px);
+  font-size: clamp(34px, 4vw, 48px);
 }
 
 .pos-summary .primary {
-  min-height: 64px;
+  min-height: 58px;
   border-radius: 12px;
-  font-size: 18px;
+  font-size: 16px;
   text-transform: uppercase;
 }
 
@@ -2691,6 +2693,40 @@ tbody tr:hover {
 
   .pdv-kpis {
     min-width: 0;
+  }
+}
+
+@media (max-width: 1380px) {
+  .pdv-workstation {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+    gap: 14px;
+  }
+
+  .pdv-workstation .pdv-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pdv-workstation .pdv-hero h2 {
+    max-width: none;
+  }
+
+  .pdv-workstation .pdv-kpis {
+    min-width: 0;
+  }
+
+  .pdv-workstation .product-grid {
+    grid-template-columns: repeat(3, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .pdv-workstation {
+    grid-template-columns: 1fr;
+  }
+
+  .pos-summary {
+    position: static;
   }
 }
 

@@ -1808,6 +1808,12 @@ function App() {
   const [user, setUser] = useState(getUser());
   const logged = useMemo(() => Boolean(getToken() && user), [user]);
 
+  useEffect(() => {
+    const expire = () => setUser(null);
+    window.addEventListener("sud:session-expired", expire);
+    return () => window.removeEventListener("sud:session-expired", expire);
+  }, []);
+
   if (!logged) return <Login onLogin={setUser} />;
   return <Shell user={user} onLogout={() => { clearSession(); setUser(null); }} />;
 }

@@ -32,6 +32,10 @@ export async function api(path, options = {}) {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "Erro de comunicacao." }));
+    if (response.status === 401) {
+      clearSession();
+      window.dispatchEvent(new CustomEvent("sud:session-expired"));
+    }
     throw new Error(error.message || "Erro inesperado.");
   }
 
