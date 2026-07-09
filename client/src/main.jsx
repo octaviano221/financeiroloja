@@ -22,6 +22,7 @@ import {
   Search,
   Settings,
   ShoppingBag,
+  Star,
   Trash2,
   Truck,
   Users,
@@ -483,6 +484,13 @@ function PDV() {
     ["CREDIARIO", "Fiado", FileText],
     ["VALE_TROCA", "Vale", Receipt]
   ];
+  const quickCategories = [
+    ["Blusas", "Blusas", Package],
+    ["Calças", "Calças", Boxes],
+    ["Vestidos", "Vestidos", Heart],
+    ["Promoções", "Promo", Gift],
+    ["Mais vendidos", "", Star]
+  ];
   const filteredProducts = products.filter((product) => {
     const term = productSearch.trim().toLowerCase();
     if (!term) return true;
@@ -593,8 +601,13 @@ function PDV() {
   }
 
   return (
-    <section className="page pdv-grid">
+    <section className="page pdv-workstation">
       <div>
+        <div className="pdv-operator-bar">
+          <span><ShoppingBag size={17} /> Loja: Sud Daiana Modas</span>
+          <span><CalendarHeart size={17} /> {new Date().toLocaleDateString("pt-BR")}</span>
+          <span><BadgeDollarSign size={17} /> Caixa aberto</span>
+        </div>
         <div className="pdv-hero">
           <div className="page-title"><h2>PDV / Frente de Caixa</h2><p>Venda rápida com leitor, cliente, pagamento e cupom.</p></div>
           <div className="pdv-kpis">
@@ -613,6 +626,61 @@ function PDV() {
           </div>
           <button className="primary scanner-add" type="submit"><Plus size={17} /> Adicionar</button>
         </form>
+        <div className="pdv-command-row">
+          <button type="button" onClick={() => document.querySelector(".pdv-tools input")?.focus()}><Search size={20} /><span>Buscar produto<small>F2</small></span></button>
+          <button type="button" onClick={() => setProductSearch("")}><Package size={20} /><span>Produto sem código<small>Catálogo</small></span></button>
+          <button type="button" onClick={() => setProductSearch("")}><Gift size={20} /><span>Venda rÃ¡pida<small>Atalho</small></span></button>
+          <button type="button" onClick={() => remove(cart.length - 1)} disabled={!cart.length}><X size={20} /><span>Cancelar item<small>Esc</small></span></button>
+        </div>
+        <div className="pdv-category-row">
+          {quickCategories.map(([label, term, Icon]) => (
+            <button key={label} type="button" onClick={() => setProductSearch(term)}>
+              <Icon size={19} />
+              {label}
+            </button>
+          ))}
+        </div>
+        <section className="sale-items-panel">
+          <div className="sale-items-head">
+            <h3>Itens da venda</h3>
+            <button type="button" onClick={() => setCart([])} disabled={!cart.length}><Trash2 size={15} /> Esvaziar carrinho</button>
+          </div>
+          <div className="sale-table">
+            <div className="sale-table-head">
+              <span>Produto</span>
+              <span>Qtd.</span>
+              <span>Valor unit.</span>
+              <span>Desconto</span>
+              <span>Total</span>
+              <span />
+            </div>
+            {cart.map((item, index) => (
+              <div className="sale-table-row" key={`${item.productId}-${index}`}>
+                <span className="sale-product">
+                  <img src={item.product.imageUrl || "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=120&q=80"} alt="" />
+                  <span>{item.product.name}<small>{item.variant?.color} - {item.variant?.size}</small><em>SKU: {item.variant?.sku || item.product.sku}</em></span>
+                </span>
+                <span className="qty-stepper">
+                  <button type="button" onClick={() => updateCart(index, { quantity: item.quantity - 1 })}><Minus size={14} /></button>
+                  <input type="number" min="1" value={item.quantity} onChange={(event) => updateCart(index, { quantity: Number(event.target.value) })} />
+                  <button type="button" onClick={() => updateCart(index, { quantity: item.quantity + 1 })}><Plus size={14} /></button>
+                </span>
+                <strong>{money(item.unitPrice)}</strong>
+                <input className="discount-input" type="number" min="0" value={item.discount} onChange={(event) => updateCart(index, { discount: Number(event.target.value) })} />
+                <strong>{money(Math.max(item.quantity * item.unitPrice - Number(item.discount || 0), 0))}</strong>
+                <button className="icon-action" type="button" title="Remover item" onClick={() => remove(index)}><Trash2 size={16} /></button>
+              </div>
+            ))}
+            {!cart.length && (
+              <div className="sale-table-empty">
+                <Barcode size={34} />
+                <strong>Passe o leitor ou escolha um produto abaixo</strong>
+                <span>Os itens da venda aparecem aqui para conferir antes de finalizar.</span>
+              </div>
+            )}
+          </div>
+          <button className="sale-note" type="button"><Plus size={15} /> Adicionar observação ou informação da venda</button>
+        </section>
         <div className="pdv-tools">
           <div className="search inline">
             <Search size={18} />
@@ -650,8 +718,8 @@ function PDV() {
           </div>
         </div>
       </div>
-      <aside className="checkout">
-        <h3><ShoppingBag size={18} /> Carrinho</h3>
+      <aside className="checkout pos-summary">
+        <h3><ShoppingBag size={18} /> Fechamento da venda</h3>
         <label>Cliente
           <select value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
             <option value="">Cliente não cadastrado</option>
